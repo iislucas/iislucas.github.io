@@ -10,7 +10,7 @@ I also helped run a [non-profit working towards more rational and informed discu
 
 Outside of scientific advances, I like martial arts.
 
-## My favorite of [my papers](https://scholar.google.com/citations?user=nDs3-TMAAAAJ&hl=en&oi=ao)
+## My Favorite [papers that I contributed to](https://scholar.google.com/citations?user=nDs3-TMAAAAJ&hl=en&oi=ao)
 
 My taste differs the citation counts of my papers, so of the that research projects I've been involved in, here's my personal favorites and why (Chronological order, I'll add more later)... 
 
