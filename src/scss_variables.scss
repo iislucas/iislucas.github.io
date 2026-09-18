@@ -1,0 +1,130 @@
+// ============================================================================
+//  Text Colors
+//  Used for headings, body copy, labels, and metadata throughout the app.
+// ============================================================================
+$text-primary: #18181b; // Deep black / near-black — main body text, primary titles
+$text-secondary: #52525b; // Charcoal gray — labels, descriptions, secondary text
+$text-muted: #71717a; // Medium neutral gray — timestamps, metadata
+$text-placeholder: #a1a1aa; // Light neutral gray — placeholders, search icons
+
+// ============================================================================
+//  Border & Separator Colors
+//  Used for input borders, card outlines, dividers, and section separators.
+// ============================================================================
+$border-color-light: #e4e4e7; // Clean neutral borders on inputs, cards, menus, and dividers
+$separator-color: #f4f4f5; // Subtle separators between list items, sections, and backgrounds
+
+// ============================================================================
+//  Brand / Theme Colors
+//
+//  This palette is the one place to change the site's look. The structure is
+//  inherited from ilc-members-manager (so the shared components keep working);
+//  the values are this site's own — a slate-ink chrome with a single deep blue
+//  accent, rather than that project's grey-and-red branding.
+// ============================================================================
+$theme-bg-color: #ffffff; // Card, panel, and content background
+$theme-border-color: #1f2933; // Card outlines and active borders
+$theme-heading-color-subtle: #272727; // Form section heading text
+$heading-accent-color: #1b4965; // Deep blue accent — links, headings, primary buttons
+$brand-accent: #1b4965; // Alias of the accent, for styles that name the brand directly
+$brand-red: $brand-accent; // Back-compat alias for components carried over from ilc-members-manager
+
+// Header & Footer: dark slate with a lighter rule and white text.
+$header-bg-color: #1f2933;
+$header-text-color: #fff;
+$header-border-color: #1b4965;
+$footer-bg-color: #1f2933;
+$footer-text-color: #fff;
+$footer-border-color: #1b4965;
+
+// ============================================================================
+//  Interactive / Focus Colors
+// ============================================================================
+$focus-ring-color: #1b4965; // Focus ring on search inputs and active tags
+$input-focus-border: #71717a; // Neutral charcoal border on focus so it doesn't look like an error
+$input-focus-glow: rgba(27, 73, 101, 0.15); // Brand-tinted soft focus glow
+
+@mixin input-focus-ring($border-color: $input-focus-border, $glow: $input-focus-glow) {
+  outline: none;
+  border-color: $border-color;
+  box-shadow: 0 0 0 3px $glow;
+}
+
+// ============================================================================
+//  Button Colors (Monochrome Yin/Yang with Dark Borders)
+//  Base styling for all <button> elements. See styles.scss for variants
+//  like .icon-only-button, .delete-button, .subtle-button, etc.
+// ============================================================================
+$button-bg-color: #f4f4f5;
+$button-border-color: #27272a;
+$button-text-color: #18181b;
+$button-hover-bg-color: #e4e4e7;
+$button-active-bg-color: #d4d4d8;
+$shadow-color: transparent;
+$shadow-color-hover: transparent;
+$shadow-color-active: transparent;
+
+// ============================================================================
+//  Modal & Backdrop System
+// ============================================================================
+$modal-backdrop-bg: rgba(0, 0, 0, 0.55);
+$modal-backdrop-filter: blur(2px);
+$modal-z-index: 1050;
+$modal-border-radius: 12px;
+$modal-max-height: 90vh;
+
+// ============================================================================
+//  Chip Colors
+//  Used for .level-chip, .identifier-chip, .email-chip (clean neutral)
+//  and .tag-chip (light blue tag tint). See styles.scss for all chip classes.
+// ============================================================================
+$theme-chip-bg-color: #f4f4f5;
+$theme-chip-border-color: #d4d4d8;
+
+$theme-tag-bg-color: #e0f2fe;
+$theme-tag-border-color: #7dd3fc;
+
+// Highlight badges, active chips & stage checkmarks (Light blue bg with medium blue border)
+$highlight-tag-bg: #e0f2fe;
+$highlight-tag-border: #7dd3fc;
+$highlight-tag-text: #0369a1;
+
+// ============================================================================
+//  Menu Colors
+// ============================================================================
+$menu-item-hover-color: #f0f7ff;
+$menu-sep-color: #e4e4e7;
+
+// ============================================================================
+//  Error Colors (Red Accent)
+// ============================================================================
+$theme-error-text-color: #991b1b;
+$theme-error-bg-color: #fef2f2;
+$theme-error-border-color: #fecaca;
+$danger-color: #d32f2f;
+
+// ============================================================================
+//  Layout Constants
+// ============================================================================
+$max-main-width: 900px; // Default max-width for centered page containers
+$card-padding: 10px;
+$card-sep: 0.75em;
+
+// List styling (Selection / active item highlights — red left-border with light grey background)
+$row-border-color: #e4e4e7;
+$row-highlight-bg: #f4f4f5;
+$row-highlight-border: #1b4965;
+$table-row-selected: #f4f4f5;
+$primary-color: #1b4965;
+
+@mixin row-highlight-base {
+  border-left: 4px solid transparent;
+  transition:
+    background-color 0.2s ease,
+    border-left-color 0.2s ease;
+}
+
+@mixin row-highlight-active {
+  background-color: $row-highlight-bg;
+  border-left-color: $row-highlight-border;
+}

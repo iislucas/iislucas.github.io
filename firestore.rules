@@ -1,0 +1,57 @@
+rules_version = '2';
+
+/*
+ * Firestore rules for iislucas.github.io.
+ *
+ * The shape of the site is simple: everything published is world-readable, and
+ * only an admin may write anything. "Admin" is the same mechanism as in
+ * ilc-members-manager — a document at `acl/{email}` with `isAdmin: true` —
+ * so granting yourself access is one document, and revoking it is deleting one.
+ *
+ * Note that these rules are the ONLY enforcement. The client hides edit
+ * buttons from non-admins as a courtesy, but anyone can call the API directly,
+ * so nothing here may rely on the UI.
+ */
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Deny by default: every collection below must opt in explicitly.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isAdmin() {
+      let email = request.auth != null ? request.auth.token.email : null;
+      let aclPath = email != null ? /databases/$(database)/documents/acl/$(email) : null;
+      return email != null
+        && request.auth.token.email_verified == true
+        && exists(aclPath)
+        && get(aclPath).data.isAdmin == true;
+    }
+
+    // The ACL itself. A signed-in user may read their OWN entry — that is how
+    // the app learns whether to show edit controls — and nobody may write one
+    // from the client: entries are created in the Firebase console (see
+    // SETUP.md), which keeps the grant of admin off the public API entirely.
+    match /acl/{email} {
+      allow read: if request.auth != null && request.auth.token.email == email;
+      allow write: if false;
+    }
+
+    // Concept gallery entries, keyed by slug.
+    match /concepts/{slug} {
+      // Drafts (published == false) are for the author's eyes only. A query
+      // that does not filter on `published` is refused for anonymous readers,
+      // which is why ContentService issues a filtered query unless the user is
+      // an admin.
+      allow read: if resource.data.published == true || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Single-document site content: `site/profile` holds the landing page.
+    match /site/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

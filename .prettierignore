@@ -1,0 +1,14 @@
+# Files carried over from ilc-members-manager, kept byte-identical to upstream
+# so that `pnpm run sync:markdown-editor` (and any hand refresh of the routing
+# code) produces a diff of real changes rather than of formatting.
+# See vendor/README.md.
+src/app/markdown-editor/
+src/app/image-upload-preview/
+src/app/icons/
+src/app/routing.utils.ts
+src/app/routing.service.ts
+
+# Generated
+dist/
+.angular/
+pnpm-lock.yaml

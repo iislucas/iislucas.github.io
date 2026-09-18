@@ -1,0 +1,124 @@
+@use '../../scss_variables' as *;
+
+.gallery-page {
+  padding-top: 1.75em;
+  padding-bottom: 3em;
+}
+
+.gallery-header {
+  margin-bottom: 1.5em;
+}
+
+.heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1em;
+  flex-wrap: wrap;
+
+  h1 {
+    margin: 0;
+    color: $text-primary;
+  }
+}
+
+.new-concept-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+}
+
+.gallery-intro {
+  display: block;
+  margin-top: 0.75em;
+  color: $text-secondary;
+  max-width: 60ch;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75em;
+  margin-bottom: 1.5em;
+  padding-bottom: 1.25em;
+  border-bottom: 1px solid $border-color-light;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  border: 1px solid $border-color-light;
+  border-radius: 0.3em;
+  padding: 0.35em 0.6em;
+  background-color: #fff;
+  min-width: 220px;
+
+  app-icon {
+    fill: $text-placeholder;
+    flex-shrink: 0;
+  }
+
+  input {
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 0.95em;
+    flex-grow: 1;
+    min-width: 0;
+    background: transparent;
+  }
+
+  &:focus-within {
+    @include input-focus-ring;
+  }
+}
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3em;
+}
+
+.filter-tag {
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: none;
+
+  &.selected {
+    background-color: $highlight-tag-bg;
+    border-color: $highlight-tag-border;
+    color: $highlight-tag-text;
+    font-weight: 600;
+  }
+}
+
+.concept-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: $card-sep;
+}
+
+.loading-note,
+.empty-note {
+  color: $text-muted;
+  padding: 2em 0;
+  line-height: 1.5;
+}
+
+.drafts-section {
+  margin-top: 2.5em;
+  padding-top: 1.5em;
+  border-top: 1px dashed $border-color-light;
+
+  h2 {
+    margin: 0;
+  }
+}
+
+.drafts-note {
+  margin: 0.35em 0 1em;
+  color: $text-muted;
+  font-size: 0.9em;
+}

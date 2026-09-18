@@ -1,0 +1,81 @@
+@use '../../scss_variables' as *;
+
+.login-page {
+  max-width: 420px;
+  padding-top: 2em;
+  padding-bottom: 2em;
+}
+
+.login-card,
+.signed-in-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+}
+
+h2 {
+  margin: 0;
+}
+
+.intro {
+  margin: 0;
+  color: $text-secondary;
+  font-size: 0.95em;
+}
+
+.signed-in-email {
+  margin: 0;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+}
+
+label {
+  font-size: 0.85em;
+  font-weight: 600;
+  color: $text-secondary;
+  margin-top: 0.4em;
+}
+
+input {
+  font-family: inherit;
+  font-size: 1em;
+  padding: 0.5em 0.6em;
+  border: 1px solid $border-color-light;
+  border-radius: 0.3em;
+  box-sizing: border-box;
+
+  &:focus {
+    @include input-focus-ring;
+  }
+}
+
+form button {
+  margin-top: 0.9em;
+}
+
+.google-button {
+  width: 100%;
+  padding: 0.6em;
+}
+
+.separator {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  color: $text-muted;
+  font-size: 0.85em;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: $border-color-light;
+  }
+}

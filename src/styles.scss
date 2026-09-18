@@ -1,0 +1,1558 @@
+/* You can add global styles to this file, and also import other style files */
+
+/*
+  Improved Button Styling:
+  - A simple, clean button style inspired by Material Design.
+  - Uses SCSS variables for a customizable and maintainable color palette.
+  - Provides visual feedback on hover and press for a better user experience.
+*/
+
+// Use the modern `@use` rule to import SCSS modules.
+// `as *` makes the variables available globally in this file without a namespace.
+@use 'scss_variables' as *;
+@use 'sass:color';
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 0px;
+  padding: 0px;
+}
+
+// ----------------------------------------------------------------------------
+//  Global Typography
+//  These apply app-wide. Component SCSS should NOT redefine heading colors or
+//  paragraph text colors — use these defaults and the $text-* variables.
+// ----------------------------------------------------------------------------
+
+h2 {
+  color: $text-primary;
+}
+
+// ----------------------------------------------------------------------------
+//  Global Links
+//  Standout inline links throughout the app use the official ILC brand red.
+// ----------------------------------------------------------------------------
+
+a {
+  color: $heading-accent-color;
+  text-decoration: underline;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: color.adjust($heading-accent-color, $lightness: -10%);
+  }
+}
+
+// ----------------------------------------------------------------------------
+//  Centered Container
+//  Use on page-level wrapper divs to constrain content width with auto margins.
+//  Override max-width in component SCSS only when a wider/narrower layout is needed.
+// ----------------------------------------------------------------------------
+
+.centered-container {
+  max-width: $max-main-width;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 1em;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+// ----------------------------------------------------------------------------
+//  Buttons
+// ----------------------------------------------------------------------------
+
+button,
+a.button,
+.button {
+  // Inherit font styles for consistency
+  font-family: inherit;
+  font-size: 100%;
+  font-weight: 500; // Slightly bolder for emphasis
+  text-decoration: none;
+  box-sizing: border-box;
+
+  // Sizing and spacing
+  border-radius: 0.3em;
+
+  // Colors and borders
+  color: $button-text-color;
+  background-color: $button-bg-color;
+  border: 1px solid $button-border-color;
+
+  // Interaction
+  cursor: pointer;
+  // Clean flat design: no drop-shadows on buttons
+  box-shadow: none;
+  // Smooth transitions for hover and active states.
+  transition: all 0.2s ease-in-out;
+
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+  gap: 0.4em;
+  padding: 0.3em;
+  padding-left: 0.4em;
+  padding-right: 0.4em;
+}
+
+.round-button {
+  border-radius: 100%;
+  padding: 0.2em;
+}
+
+.delete-button {
+  background-color: unset;
+  border: 1px solid $border-color-light;
+  color: $text-muted;
+}
+
+.delete-button:hover {
+  background-color: $theme-error-bg-color;
+  border: 1px solid $theme-error-border-color;
+  color: $theme-error-text-color;
+}
+
+.icon-only-button.delete-button {
+  border: none;
+  background-color: transparent;
+  color: $text-muted;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+
+  &:hover {
+    background-color: $theme-error-bg-color;
+    color: $theme-error-text-color;
+    border: none;
+  }
+
+  &:active {
+    background-color: color.adjust($theme-error-bg-color, $lightness: -5%);
+    transform: translateY(1px);
+  }
+}
+
+button:hover,
+a.button:hover,
+.button:hover {
+  // On hover, slightly darken the background for a flat interactive effect.
+  background-color: $button-hover-bg-color;
+  box-shadow: none;
+  color: $button-text-color;
+  text-decoration: none;
+}
+
+button:active,
+a.button:active,
+.button:active {
+  // When pressed, simulate a "push" effect by moving the button down slightly.
+  transform: translateY(1px);
+  background-color: $button-active-bg-color;
+  box-shadow: none;
+}
+
+button:disabled,
+a.button:disabled,
+.button:disabled {
+  // Style for disabled buttons to provide clear visual feedback.
+  cursor: not-allowed;
+  opacity: 0.7;
+  box-shadow: none;
+}
+
+.icon-only-button {
+  // Sizing and spacing
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 100%;
+  // Colors and borders
+  background-color: unset;
+  border: unset;
+  // A subtle shadow for a "raised" Material Design effect.
+  box-shadow: unset;
+  opacity: 0.8;
+
+  &:hover {
+    background-color: unset;
+    box-shadow: unset;
+    opacity: 1;
+  }
+  &:active {
+    background-color: unset;
+    box-shadow: unset;
+    background-color: $button-active-bg-color;
+    opacity: 1;
+  }
+  &:disabled {
+    opacity: 0.7;
+    background-color: unset;
+    box-shadow: unset;
+  }
+}
+
+.inline-link-button {
+  display: inline;
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  color: $heading-accent-color;
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:hover {
+    background-color: transparent;
+    box-shadow: none;
+    color: color.adjust($heading-accent-color, $lightness: -10%);
+  }
+  &:active {
+    background-color: transparent;
+    box-shadow: none;
+    transform: unset;
+  }
+}
+
+.subtle-button {
+  background-color: transparent;
+  border: 1px solid transparent;
+  box-shadow: none;
+  color: #222;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.4em 0.8em;
+  border-radius: 4px;
+  font-size: 1em;
+  text-decoration: none;
+
+  &:hover {
+    background-color: $menu-item-hover-color;
+    box-shadow: none;
+    color: $text-primary;
+  }
+
+  &:active {
+    background-color: color.adjust($menu-item-hover-color, $lightness: -5%);
+    transform: translateY(1px);
+  }
+
+  app-icon {
+    font-size: 1.25em;
+  }
+}
+
+// A subtle-button variant with a visible border. Use for secondary actions
+// that need to be clearly clickable, e.g. file upload triggers, optional
+// selection inputs.  Pair with an icon for clarity.
+//
+// Usage:
+//   <button class="outlined-button" (click)="selectFile()">
+//     <app-icon name="upload_file" /> select a file
+//   </button>
+.outlined-button {
+  @extend .subtle-button;
+  border: 1px dashed $border-color-light;
+}
+
+// ----------------------------------------------------------------------------
+//  Admin Button
+//  Action buttons reserved for administrative operations (e.g. Create Article).
+//  Consistent with the central admin style: does not change background,
+//  uses square edges, brand-red color, and a dashed border.
+//
+//  Usage:
+//    <button class="admin-button" (click)="adminAction()">
+//      <app-icon name="add" /> Admin Action
+//    </button>
+//    <a class="admin-button" href="...">New Article</a>
+// ----------------------------------------------------------------------------
+.admin-button,
+a.admin-button,
+button.admin-button {
+  @extend .subtle-button;
+  background-color: transparent;
+  border: 1px dashed $brand-red;
+  color: $brand-red;
+  border-radius: 0;
+  box-shadow: none;
+
+  app-icon {
+    color: $brand-red;
+  }
+
+  &:hover {
+    background-color: transparent;
+    border-color: $brand-red;
+    color: $brand-red;
+    box-shadow: none;
+  }
+
+  &:active {
+    background-color: transparent;
+    border-color: $brand-red;
+    color: $brand-red;
+    box-shadow: none;
+  }
+}
+
+// ----------------------------------------------------------------------------
+//  Primary Action Button
+//  Official primary call-to-action button (e.g. Register, Checkout, Renew Now).
+//  Uses the brand red accent color (#950000) with white bold text.
+//  Never use solid black for positive primary action buttons.
+// ----------------------------------------------------------------------------
+.primary-button,
+a.primary-button,
+button.primary-button {
+  background-color: $heading-accent-color;
+  border: 1px solid $heading-accent-color;
+  color: #ffffff;
+  font-weight: bold;
+  box-shadow: none;
+
+  &:hover {
+    background-color: color.adjust($heading-accent-color, $lightness: -8%);
+    border-color: color.adjust($heading-accent-color, $lightness: -8%);
+    box-shadow: none;
+    color: #ffffff;
+  }
+
+  &:active {
+    background-color: color.adjust($heading-accent-color, $lightness: -12%);
+    box-shadow: none;
+    color: #ffffff;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  app-icon {
+    color: #ffffff;
+  }
+}
+
+// ----------------------------------------------------------------------------
+//  Card style
+// ----------------------------------------------------------------------------
+
+.card {
+  background-color: $theme-bg-color;
+  border-radius: 0.5em;
+  padding: 1em;
+  border: 1px solid $theme-border-color;
+  // box-shadow: 0 0 0.5em #955;
+  min-width: 7em;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 0.3em;
+}
+
+// ----------------------------------------------------------------------------
+//  Notes & Status Banners
+//  Clean neutral grey box with dark left accent border for active subscription
+//  statuses, guidance notes, and info callouts.
+// ----------------------------------------------------------------------------
+
+.note-box,
+.current-membership-banner {
+  border: 1px solid $border-color-light;
+  border-left: 4px solid #18181b;
+  background: $separator-color;
+  border-radius: 8px;
+  padding: 1.25em 1.5em;
+  box-sizing: border-box;
+
+  .banner-header,
+  .note-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1em;
+
+    h3 {
+      margin: 0 0 0.25em;
+      font-size: 1.1em;
+      color: $text-primary;
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.95em;
+      color: $text-secondary;
+      line-height: 1.4;
+    }
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.95em;
+    color: $text-secondary;
+    line-height: 1.4;
+  }
+}
+
+.note {
+  color: $text-secondary;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+
+// ----------------------------------------------------------------------------
+//  Standard input stuff
+// ----------------------------------------------------------------------------
+
+input[type='text'],
+input[type='password'],
+input[type='email'],
+input[type='url'],
+input[type='number'],
+select {
+  background-color: unset;
+  width: auto;
+  // field-sizing: content;
+  max-width: 30em;
+  flex-grow: 1;
+  padding: 8px 12px;
+  border: 1px solid $border-color-light;
+  border-radius: 6px;
+  box-sizing: border-box; /* Ensures padding doesn't affect width */
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &:focus,
+  &:focus-visible {
+    @include input-focus-ring;
+  }
+}
+
+textarea {
+  background-color: unset;
+  flex-grow: 1;
+  // field-sizing: content;
+  padding: 8px 12px;
+  border: 1px solid $border-color-light;
+  border-radius: 6px;
+  box-sizing: border-box; /* Ensures padding doesn't affect width */
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &:focus,
+  &:focus-visible {
+    @include input-focus-ring;
+  }
+}
+
+textarea {
+  resize: vertical;
+  min-height: 3em;
+  max-width: 30em;
+}
+
+select {
+  width: auto;
+  max-width: 30em;
+  field-sizing: content;
+}
+
+input[type='date'] {
+  width: auto;
+  min-width: 120px;
+  max-width: 10em;
+  padding: 8px 12px;
+  border: 1px solid $border-color-light;
+  border-radius: 6px;
+  box-sizing: border-box;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &:focus,
+  &:focus-visible {
+    @include input-focus-ring;
+  }
+
+  &::placeholder {
+    color: #999;
+  }
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background-color: $separator-color;
+  border: 1px solid $border-color-light;
+  opacity: 0.6;
+}
+
+input[type='checkbox'] {
+  accent-color: $heading-accent-color;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid rgba(149, 0, 0, 0.4);
+    outline-offset: 2px;
+  }
+}
+
+// ----------------------------------------------------------------------------
+//  List Search and Filtering
+// ----------------------------------------------------------------------------
+
+.list-search-header {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+
+  .search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    min-width: 200px;
+    gap: 0.4rem;
+
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      color: $text-placeholder;
+    }
+
+    input[type='text'] {
+      padding: 8px 8px 8px 35px; /* Left padding to make space for the icon */
+      border: 1px solid $border-color-light;
+      border-radius: 20px;
+      transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+      width: 100%;
+      max-width: unset;
+
+      &:focus,
+      &:focus-visible {
+        @include input-focus-ring;
+      }
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------
+//  Interactive List Rows
+//  Row-level hover and selection styling for clickable lists and detail headers.
+//
+//  Uses the row-highlight-base / row-highlight-active mixins from
+//  scss_variables.scss.  The mixins provide a 4px transparent left border
+//  that transitions to $row-highlight-border with a $row-highlight-bg
+//  background when active.
+//
+//  Pattern A — Hover highlight (list items, table rows):
+//    Apply row-highlight-base on the element, row-highlight-active on :hover.
+//
+//      .my-list-item {
+//        @include v.row-highlight-base;
+//        cursor: pointer;
+//        &:hover { @include v.row-highlight-active; }
+//      }
+//
+//  Pattern B — Permanent "selected" highlight (detail page headers):
+//    Apply both mixins unconditionally so the row looks permanently selected,
+//    visually connecting it to the list the user navigated from.
+//
+//      app-member-row-header {
+//        @include v.row-highlight-base;
+//        @include v.row-highlight-active;
+//      }
+//
+//  Pattern C — Jump-to-item flash animation:
+//    Combine with a keyframe animation that fades from the active state back
+//    to transparent.  See member-list.scss for the flashHighlight keyframe.
+//
+//  Currently used by: member-list, member-details, order-list.
+// ----------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------
+//  Selectable Card Links
+//  Applied to <a> elements used as card containers in list views. Allows
+//  text selection by drag (desktop) or long-press (mobile) while still
+//  navigating on a clean click. Prevents the browser's default link-drag
+//  behavior that would otherwise block text selection.
+//
+//  Usage: add class="selectable-card" to the <a> element, then bind
+//  (click)="onCardClick($event)" with the shared handler that checks
+//  window.getSelection().
+//
+//  Currently used by: member-list, school-list, event-list.
+// ----------------------------------------------------------------------------
+
+a.selectable-card {
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-user-drag: none;
+  cursor: pointer;
+}
+
+// ----------------------------------------------------------------------------
+//  Active Filter Chips
+//  Blue pill chips with a clear (X) button, used to show active filter
+//  state and let the user remove individual filters.
+//
+//  Usage:
+//    <div class="active-tag-filter">
+//      <span class="active-tag-chip">
+//        Filter Label
+//        <button class="tag-clear-btn" (click)="remove()">
+//          <app-icon name="close"></app-icon>
+//        </button>
+//      </span>
+//    </div>
+//
+//  Currently used by: member-list, find-an-instructor.
+// ----------------------------------------------------------------------------
+
+.active-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px 3px 10px;
+  background-color: $theme-tag-bg-color;
+  color: $focus-ring-color;
+  border-radius: 16px;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+.tag-clear-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+  padding: 2px;
+  color: $focus-ring-color;
+  border-radius: 50%;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: rgba($focus-ring-color, 0.12);
+    box-shadow: none;
+  }
+
+  &:active {
+    transform: none;
+    box-shadow: none;
+  }
+
+  app-icon {
+    font-size: 0.85em;
+  }
+}
+
+// ----------------------------------------------------------------------------
+//  Chips and text styles
+// ----------------------------------------------------------------------------
+
+.section-chip {
+  font-weight: bold;
+}
+
+.small-email {
+  font-size: smaller;
+  font-family: monospace;
+  padding: 0.2em;
+}
+
+.email-chip {
+  font-size: small;
+  font-family: monospace;
+  background-color: $theme-chip-bg-color;
+  border-radius: 5px;
+  padding: 0.2em;
+  border: 1px solid $theme-chip-border-color;
+}
+
+.level-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5em;
+}
+
+.level-chip {
+  font-size: small;
+  border-radius: 0.5em;
+  padding: 0.25em 0.5em;
+  background-color: $theme-chip-bg-color;
+}
+
+.tag-chip {
+  background-color: $theme-tag-bg-color;
+  border: 1px solid $theme-tag-border-color;
+  border-radius: 0.5em;
+  padding: 0.25em 0.5em;
+  font-size: small;
+  font-family: monospace;
+}
+
+// ----------------------------------------------------------------------------
+//  Highlight Badges & Step Checkmarks (Light Blue Theme)
+// ----------------------------------------------------------------------------
+
+.step-completed-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: $highlight-tag-bg;
+  color: $highlight-tag-text;
+  border: 1px solid $highlight-tag-border;
+
+  app-icon {
+    width: 15px;
+    height: 15px;
+  }
+}
+
+.active-badge,
+.lifetime-badge,
+.badge-highlight {
+  display: inline-block;
+  padding: 3px 8px;
+  font-size: 0.75em;
+  font-weight: 600;
+  border-radius: 12px;
+  background: $highlight-tag-bg;
+  color: $highlight-tag-text;
+  border: 1px solid $highlight-tag-border;
+  white-space: nowrap;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  font-size: 0.75em;
+  font-weight: 600;
+  border-radius: 12px;
+  white-space: nowrap;
+
+  &.paid,
+  &.status-paid,
+  &.status-active,
+  &.status-lifetime {
+    background: $highlight-tag-bg;
+    color: $highlight-tag-text;
+    border: 1px solid $highlight-tag-border;
+  }
+
+  &.unpaid,
+  &.status-expired,
+  &.status-failed {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+  }
+
+  &.status-pending {
+    background: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fde68a;
+  }
+}
+
+.identifier-chip {
+  display: inline-block;
+  vertical-align: middle;
+  background-color: $theme-chip-bg-color;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-family: monospace;
+  border: 1px solid $theme-chip-border-color;
+  padding: 1px 6px;
+  line-height: 1.3;
+  box-sizing: border-box;
+
+  &.expired-recent {
+    background-color: #fff3cd;
+    border-color: #d4a843;
+    color: #856404;
+  }
+
+  &.expired-old {
+    background-color: $separator-color;
+  }
+
+  &.status-issue {
+    background-color: #fff3cd;
+    border-color: #d4a843;
+    color: #856404;
+  }
+
+  &.status-inactive {
+    background-color: #e9e9e9;
+    border-color: #bbb;
+    color: #777;
+  }
+
+  &.instructor-id {
+    font-size: 0.9em;
+    color: $text-muted;
+    background-color: $separator-color;
+    border: unset;
+    background-color: unset;
+  }
+}
+
+.missing-identifier-chip {
+  border-radius: 5px;
+  font-size: small;
+  font-family: monospace;
+  border: 1px dashed $theme-chip-border-color;
+  padding: 0.2em;
+}
+
+.dynamic-identifier-chip {
+  background-color: $theme-chip-bg-color;
+  border-radius: 5px;
+  font-size: small;
+  font-family: monospace;
+  border: 1px dashed $theme-chip-border-color;
+  padding: 0.2em;
+}
+
+// ----------------------------------------------------------------------------
+//  Event Status Chips
+//  Colored pill chips indicating event approval status.
+//  Each status has a distinct background + text color pairing.
+//
+//  Usage:
+//    <span class="event-status-chip status-proposed">Waiting for Approval</span>
+//
+//  Currently used by: event-item, event-view, manage-events.
+// ----------------------------------------------------------------------------
+
+.event-status-chip {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: 600;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.status-draft {
+  background-color: #e9ecef;
+  color: #495057;
+  border: 1px dashed #ced4da;
+}
+.status-proposed {
+  background-color: #fff3cd;
+  color: #856404;
+}
+.status-listed {
+  background-color: #d4edda;
+  color: #155724;
+}
+.status-unlisted {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+.status-rejected {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+.status-cancelled {
+  background-color: #e2e3e5;
+  color: #383d41;
+}
+
+// ----------------------------------------------------------------------------
+//  Admin View Chips
+//  Chips reserved for administrative indicators (e.g. HQ Registration active).
+//  Styled with square edges (not rounded), no background change (transparent),
+//  and a red dashed outline line using brand red.
+//
+//  Usage:
+//    <span class="admin-chip hq-registration-chip" title="HQ Online Registration is active for this event">
+//      <app-icon name="payments"></app-icon>
+//      <span>HQ Registration</span>
+//    </span>
+// ----------------------------------------------------------------------------
+
+.admin-chip,
+.admin-view-chip,
+.hq-registration-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  background-color: transparent;
+  border: 1px dashed $brand-red;
+  color: $brand-red;
+  border-radius: 0;
+  padding: 2px 8px;
+  font-size: 0.8em;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  font-family: inherit;
+
+  app-icon {
+    font-size: 0.95em;
+    color: $brand-red;
+  }
+}
+
+// ----------------------------------------------------------------------------
+//  Errors
+// ----------------------------------------------------------------------------
+
+.error-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: start;
+  gap: 0.5em;
+  border: 1px solid $theme-error-border-color;
+  background-color: $theme-error-bg-color;
+  border-radius: 4px;
+  font-size: 0.9em;
+  padding: 0.5em;
+
+  &.with-details {
+    flex-direction: column;
+    gap: 0.3em;
+  }
+}
+
+.error-details {
+  margin: 0;
+  padding-left: 1.5em;
+  color: $theme-error-text-color;
+  font-size: 0.95em;
+
+  li {
+    margin-bottom: 0.15em;
+  }
+}
+
+.error-message {
+  color: $theme-error-text-color;
+  flex: 1;
+}
+
+.warning-message {
+  color: #b8860b; // Dark goldenrod — distinct amber for warnings
+  flex: 1;
+}
+
+// Compact inline error with a dismiss button. Use next to the element that
+// triggered the error (e.g. below an upload button) so the user sees it
+// in context. Long text (e.g. filenames) is hard-wrapped via overflow-wrap.
+//
+// Usage:
+//   <div class="inline-error">
+//     <span>{{ errorMessage }}</span>
+//     <button class="icon-only-button" (click)="dismiss()"><app-icon name="close" /></button>
+//   </div>
+.inline-error {
+  display: flex;
+  align-items: start;
+  gap: 0.5em;
+  border: 1px solid $theme-error-border-color;
+  background-color: $theme-error-bg-color;
+  color: $theme-error-text-color;
+  border-radius: 4px;
+  font-size: 0.85em;
+  padding: 0.4em 0.6em;
+  max-width: 100%;
+  box-sizing: border-box;
+
+  span {
+    flex: 1;
+    overflow-wrap: break-word;
+    word-break: break-all;
+    min-width: 0;
+  }
+
+  button {
+    flex-shrink: 0;
+  }
+}
+
+// ----------------------------------------------------------------------------
+//  Menus
+// ----------------------------------------------------------------------------
+.menu-style {
+  background-color: white;
+  color: $text-primary;
+  border: 1px solid $border-color-light;
+  border-radius: 5px;
+  padding: 0.4em;
+  z-index: 100;
+  box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+}
+
+.menu-item {
+  color: $text-primary;
+  padding: 0.5em;
+  white-space: nowrap; /* Prevent text from wrapping */
+  cursor: pointer;
+  margin: 0.2em 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.75em;
+  text-decoration: none;
+  background: none;
+  border: none;
+  font: inherit;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+  border-radius: 4px;
+  @include row-highlight-base;
+
+  app-icon {
+    color: $text-secondary;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+}
+
+button.menu-item {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  font-family: inherit;
+  font-size: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
+  gap: 0.75em;
+  padding: 0.5em;
+  width: 100%;
+  box-sizing: border-box;
+
+  &:hover {
+    box-shadow: none;
+    transform: none;
+  }
+
+  &:active {
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+.menu-seperator {
+  border-top: 1px solid $border-color-light;
+}
+
+.menu-item:hover {
+  @include row-highlight-active;
+}
+
+.menu-item.active {
+  font-weight: 600;
+  background-color: $separator-color;
+  border-radius: 4px;
+}
+
+.menu-overlay {
+  /* This div is the full-screen background that covers the entire viewport */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+
+  &.transparent {
+    background-color: transparent;
+  }
+}
+
+// ----------------------------------------------------------------------------
+//  Pill Tabs
+//  A consistent tab system used across the app (settings, gradings,
+//  import-export, members/instructors area). Tabs sit on a tinted track;
+//  the active tab pops out with a white background and subtle shadow.
+//
+//  IMPORTANT: Each .pill-tab button must have a data-label attribute matching
+//  its text content. This is used by a ::after pseudo-element to pre-reserve
+//  the bold-weight width, preventing layout shift when toggling active state.
+//
+//  Usage (static labels):
+//    <div class="pill-tabs">
+//      <button class="pill-tab" data-label="Label" [class.active]="...">Label</button>
+//      ...
+//    </div>
+//
+//  Usage (dynamic labels, e.g. @for):
+//    <button class="pill-tab" [attr.data-label]="item" ...>{{ item }}</button>
+//
+//  Currently used by: settings, member-gradings, import-export,
+//  squarespace-content (members-area / instructors-area).
+// ----------------------------------------------------------------------------
+
+.pill-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem;
+  background: #e4e4e7;
+  border-radius: 10px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pill-tab {
+  // Override global `button` styles (display:flex, gap, transition, etc.)
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  transition: none;
+  padding: 0.45rem 1rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1.25;
+  font-weight: 500;
+  color: #71717a;
+  border-radius: 8px;
+  white-space: nowrap;
+  box-shadow: none;
+  text-align: center;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+
+  app-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  .tab-content {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+  }
+
+  // Reserve the width of the bold label so tabs don't shift when
+  // font-weight changes between inactive (500) and active (600).
+  // The ::after pseudo-element renders a bold copy of the label text
+  // (via data-label) as a block with height: 0 + overflow: hidden.
+  // This sets the button's minimum width to the bold measurement
+  // without adding any vertical space.
+  &::after {
+    content: attr(data-label);
+    display: block;
+    height: 0;
+    font-weight: 600;
+    visibility: hidden;
+    overflow: hidden;
+    pointer-events: none;
+    text-align: center;
+  }
+
+  &:hover {
+    color: #27272a;
+    background: rgba(255, 255, 255, 0.7);
+    box-shadow: none;
+  }
+
+  &:active {
+    transform: none;
+    box-shadow: none;
+    color: #27272a;
+    background: rgba(255, 255, 255, 0.7);
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(113, 113, 122, 0.4);
+    outline-offset: 1px;
+  }
+
+  &.active {
+    background: white;
+    color: #18181b;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    font-weight: 600;
+  }
+
+  &.admin-chip {
+    background-color: transparent;
+    border: 1px dashed $brand-red;
+    color: $brand-red;
+    border-radius: 0;
+    padding: calc(0.45rem - 1px) calc(0.85rem - 1px);
+    text-decoration: none;
+
+    app-icon {
+      color: $brand-red;
+      font-size: 0.95em;
+      width: 14px;
+      height: 14px;
+    }
+
+    &:hover {
+      background-color: transparent;
+      border-color: $brand-red;
+      color: $brand-red;
+      box-shadow: none;
+
+      app-icon {
+        color: $brand-red;
+      }
+    }
+
+    &:active {
+      background-color: transparent;
+      border-color: $brand-red;
+      color: $brand-red;
+      box-shadow: none;
+
+      app-icon {
+        color: $brand-red;
+      }
+    }
+
+    &.active {
+      background-color: #ffffff;
+      border: 1.5px dashed $brand-red;
+      color: $brand-red;
+      font-weight: 600;
+      padding: calc(0.45rem - 1.5px) calc(0.85rem - 1.5px);
+      box-shadow: 0 1px 4px rgba(149, 0, 0, 0.18);
+
+      app-icon {
+        color: $brand-red;
+      }
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------
+//  Header-Extension Tab Bar (flush with header, unfolds downwards)
+//  Used by home, squarespace-content (members-area / instructors-area),
+//  member-gradings, and any header-connected sub-tab bar.
+// ----------------------------------------------------------------------------
+
+.header-extension-tabs {
+  display: flex;
+  justify-content: center;
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+  position: relative;
+  z-index: 5;
+  transform-origin: top center;
+  animation: headerTabUnfoldDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
+
+  .pill-tabs {
+    margin-top: 0;
+    margin-bottom: 0;
+    align-items: center;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-top: none;
+    padding: 0.25rem 0.4rem 0.35rem 0.4rem;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+  }
+}
+
+@keyframes headerTabUnfoldDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-100%) scaleY(0.7);
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+@keyframes headerTabFoldUp {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100%) scaleY(0.7);
+  }
+}
+
+// ----------------------------------------------------------------------------
+//  Service Link Cards Grid
+//  Used for navigation tiles with icon, title, and subtitle (e.g. member-orders,
+//  login home page, public section discovery).
+// ----------------------------------------------------------------------------
+
+.services-links-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.service-link-card {
+  flex: 0 0 calc((100% - 32px) / 3);
+  max-width: calc((100% - 32px) / 3);
+  min-width: 260px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: #ffffff;
+  border: 1px solid $border-color-light;
+  border-radius: 10px;
+  padding: 18px 18px;
+  text-decoration: none;
+  color: $text-primary;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.15s ease;
+
+  app-icon {
+    color: $heading-accent-color;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .service-link-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+
+    .service-link-title {
+      font-weight: 600;
+      font-size: 1.05em;
+      line-height: 1.25;
+      color: $text-primary;
+    }
+
+    .service-link-sub {
+      font-size: 0.88em;
+      color: $text-secondary;
+      line-height: 1.35;
+    }
+  }
+
+  &:hover {
+    border-color: $heading-accent-color;
+    background: #fafafa;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  }
+}
+
+@media (max-width: 900px) {
+  .service-link-card {
+    flex: 0 0 calc((100% - 16px) / 2);
+    max-width: calc((100% - 16px) / 2);
+  }
+}
+
+@media (max-width: 600px) {
+  .service-link-card {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+// ----------------------------------------------------------------------------
+//  Guided step flows
+//
+//  Content projected into <app-step-card> keeps its own page's style scope, so
+//  these live here rather than in the component: every purchase flow (Become a
+//  Member, Next Grading, Class Video Library, Instructor License, School
+//  License) uses the same guidance line, footer and "still to do" hint.
+// ----------------------------------------------------------------------------
+
+// Guidance directly under a step title. Without an explicit margin the
+// paragraph falls back to the browser's default 1em, which stacks with the
+// card header's own spacing and leaves a ~40px gap under the heading.
+.step-guidance {
+  margin: 0 0 1em;
+  color: $text-secondary;
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
+// Footer of an expanded step: the "Continue" action, plus a note naming what
+// is still missing whenever that action is disabled.
+.step-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.75em;
+  margin-top: 1.5em;
+  padding-top: 1.15em;
+  border-top: 1px solid $separator-color;
+
+  .next-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.6em 1.4em;
+    font-size: 1em;
+    font-weight: 600;
+  }
+}
+
+// A step that ends in payment rather than a Continue button: the fee card,
+// any error, and the pay action stack down the card instead of competing for
+// one right-aligned row.
+.step-footer.checkout {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+// A single-rate page states its price in the subtitle rather than in a table.
+// It reads as part of that sentence, so it inherits the subtitle's colour and
+// weight and is set apart only by being italic.
+.headline-price {
+  font-style: italic;
+  white-space: nowrap;
+}
+
+.step-todo-hint {
+  margin: 0;
+  margin-right: auto;
+  font-size: 0.88em;
+  color: $text-muted;
+  line-height: 1.4;
+}
+
+// ============================================================================
+//  Centralized Modal & Backdrop System
+// ============================================================================
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: $modal-backdrop-bg;
+  backdrop-filter: $modal-backdrop-filter;
+  -webkit-backdrop-filter: $modal-backdrop-filter;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: $modal-z-index;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.modal-dialog {
+  background: #ffffff;
+  border-radius: $modal-border-radius;
+  border: 1px solid $border-color-light;
+  width: 100%;
+  max-width: 680px;
+  max-height: $modal-max-height;
+  display: flex;
+  flex-direction: column;
+  box-shadow: none; // Strictly flat, clean design
+  overflow: hidden;
+  animation: modalFadeIn 0.2s ease-out;
+  box-sizing: border-box;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid $border-color-light;
+  background: #fdfdfd;
+  flex-shrink: 0;
+
+  h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: $text-primary;
+  }
+}
+
+.modal-body {
+  padding: 18px 20px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-top: 1px solid $border-color-light;
+  background: #fdfdfd;
+  flex-shrink: 0;
+}

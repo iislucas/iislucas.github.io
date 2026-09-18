@@ -1,0 +1,116 @@
+@use '../../scss_variables' as *;
+
+.nav-bar {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  padding: 0.6em 1em;
+  background-color: $header-bg-color;
+  color: $header-text-color;
+  border-bottom: 3px solid $header-border-color;
+  box-sizing: border-box;
+}
+
+.site-title {
+  display: flex;
+  align-items: center;
+  color: $header-text-color;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.05em;
+  white-space: nowrap;
+
+  &:hover {
+    color: $header-text-color;
+    opacity: 0.85;
+  }
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+  flex-grow: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.nav-link {
+  color: $header-text-color;
+  text-decoration: none;
+  padding: 0.35em 0.7em;
+  border-radius: 0.3em;
+  white-space: nowrap;
+  opacity: 0.85;
+  transition:
+    background-color 0.15s ease,
+    opacity 0.15s ease;
+
+  &:hover {
+    color: $header-text-color;
+    background-color: rgba(255, 255, 255, 0.12);
+    opacity: 1;
+  }
+
+  &.active {
+    opacity: 1;
+    font-weight: 600;
+    background-color: rgba(255, 255, 255, 0.18);
+  }
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  margin-left: auto;
+}
+
+.nav-new-concept {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  color: $header-text-color;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 0.3em;
+  padding: 0.3em 0.6em;
+  font-size: 0.9em;
+
+  &:hover {
+    color: $header-text-color;
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  app-icon {
+    fill: $header-text-color;
+  }
+}
+
+.nav-sign-in-link {
+  color: $header-text-color;
+  text-decoration: underline;
+  font-size: 0.95em;
+  white-space: nowrap;
+
+  &:hover {
+    color: $header-text-color;
+    opacity: 0.85;
+  }
+}
+
+// On a phone the "New concept" label is dropped; the + icon carries it.
+@media (max-width: 560px) {
+  .nav-new-concept .label {
+    display: none;
+  }
+
+  .nav-bar {
+    gap: 0.5em;
+    padding: 0.5em 0.6em;
+  }
+}

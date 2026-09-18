@@ -1,0 +1,111 @@
+@use '../../scss_variables' as *;
+
+.concept-page {
+  padding-top: 1.25em;
+  padding-bottom: 3em;
+  max-width: 720px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-size: 0.9em;
+  text-decoration: none;
+  color: $text-secondary;
+  margin-bottom: 1.25em;
+
+  app-icon {
+    fill: currentColor;
+  }
+
+  &:hover {
+    color: $heading-accent-color;
+  }
+}
+
+.concept-header {
+  margin-bottom: 1.5em;
+  padding-bottom: 1.25em;
+  border-bottom: 1px solid $border-color-light;
+}
+
+.title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1em;
+
+  h1 {
+    margin: 0;
+    color: $text-primary;
+    font-size: 2em;
+    line-height: 1.15;
+  }
+}
+
+.edit-button {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+}
+
+.summary {
+  margin: 0.6em 0 0;
+  color: $text-secondary;
+  font-size: 1.1em;
+  line-height: 1.5;
+}
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3em;
+  margin-top: 0.9em;
+
+  .tag-chip {
+    text-decoration: none;
+  }
+}
+
+.hero-image {
+  width: 100%;
+  border-radius: 0.4em;
+  border: 1px solid $border-color-light;
+  margin-bottom: 1.5em;
+}
+
+.acknowledgement {
+  margin-top: 2.5em;
+  padding: 0.9em 1.1em;
+  border-left: 3px solid $border-color-light;
+  background-color: $separator-color;
+  color: $text-secondary;
+  font-size: 0.95em;
+  font-style: italic;
+  line-height: 1.5;
+  border-radius: 0 0.3em 0.3em 0;
+}
+
+.loading-note {
+  color: $text-muted;
+  padding: 2em 0;
+}
+
+.not-found-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75em;
+
+  h2 {
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+    color: $text-secondary;
+    line-height: 1.5;
+  }
+}

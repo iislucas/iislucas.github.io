@@ -1,0 +1,154 @@
+<div class="centered-container edit-page">
+  @if (!isAdmin()) {
+    <div class="card">
+      <h2>Not editable</h2>
+      <p>
+        You need to be signed in as an admin to edit concepts.
+        <a href="/login">Sign in</a>.
+      </p>
+    </div>
+  } @else {
+    <header class="edit-header">
+      <h1>{{ isNew() ? 'New concept' : 'Edit concept' }}</h1>
+      <a class="inline-link-button" [href]="viewHref()">Cancel</a>
+    </header>
+
+    @if (errorMessage(); as message) {
+      <div class="error-container">{{ message }}</div>
+    }
+
+    <label class="field">
+      <span class="field-label">Title</span>
+      <input
+        type="text"
+        [ngModel]="draft().title"
+        (ngModelChange)="onTitleChange($event)"
+        name="title"
+        placeholder="Emotional Fixed Points"
+      />
+    </label>
+
+    <label class="field">
+      <span class="field-label">URL slug</span>
+      <input
+        type="text"
+        [ngModel]="draft().slug"
+        (ngModelChange)="onSlugChange($event)"
+        name="slug"
+        [disabled]="!isNew()"
+      />
+      <span class="field-hint">
+        @if (isNew()) {
+          The page will live at <code>/concepts/{{ draft().slug || '…' }}</code
+          >. It follows the title until you edit it.
+        } @else {
+          Fixed once created: it is this concept's URL, and changing it would break links to it.
+        }
+      </span>
+    </label>
+
+    <label class="field">
+      <span class="field-label">Summary</span>
+      <input
+        type="text"
+        [ngModel]="draft().summary"
+        (ngModelChange)="updateField('summary', $event)"
+        name="summary"
+        placeholder="One line, shown on the gallery card."
+      />
+    </label>
+
+    <div class="field">
+      <span class="field-label">Body</span>
+      <app-markdown-editor
+        bordered
+        [initialValue]="initialMarkdown()"
+        [imageUploader]="imageUploader"
+        (changed)="updateField('markdown', $event)"
+      ></app-markdown-editor>
+    </div>
+
+    <label class="field">
+      <span class="field-label">Acknowledgement</span>
+      <input
+        type="text"
+        [ngModel]="draft().acknowledgement"
+        (ngModelChange)="updateField('acknowledgement', $event)"
+        name="acknowledgement"
+        placeholder="Thanks to conversations with …"
+      />
+      <span class="field-hint">Shown in its own block at the end of the concept.</span>
+    </label>
+
+    <label class="field">
+      <span class="field-label">Tags</span>
+      <input
+        type="text"
+        [ngModel]="tagsText()"
+        (ngModelChange)="onTagsChange($event)"
+        name="tags"
+        placeholder="emotions, mathematics"
+      />
+      <span class="field-hint">Comma separated.</span>
+    </label>
+
+    <label class="field">
+      <span class="field-label">Image URL</span>
+      <input
+        type="url"
+        [ngModel]="draft().imageUrl"
+        (ngModelChange)="updateField('imageUrl', $event)"
+        name="imageUrl"
+        placeholder="Optional. Shown on the card and at the top of the page."
+      />
+    </label>
+
+    <label class="field narrow">
+      <span class="field-label">Gallery order</span>
+      <input
+        type="number"
+        [ngModel]="draft().order"
+        (ngModelChange)="updateField('order', +$event)"
+        name="order"
+      />
+      <span class="field-hint">Lower sorts first. Ties are broken by title.</span>
+    </label>
+
+    <label class="checkbox-field">
+      <input
+        type="checkbox"
+        [ngModel]="draft().published"
+        (ngModelChange)="updateField('published', $event)"
+        name="published"
+      />
+      <span>
+        <strong>Published</strong>
+        — unpublished concepts are visible only to you, and are listed under "In progress".
+      </span>
+    </label>
+
+    <div class="actions">
+      <button class="primary-button" (click)="save()" [disabled]="!canSave()">
+        {{ saving() ? 'Saving…' : 'Save' }}
+      </button>
+      <a class="button" [href]="viewHref()">Cancel</a>
+
+      @if (!isNew()) {
+        <div class="delete-area">
+          @if (confirmingDelete()) {
+            <span class="confirm-text">Delete "{{ draft().title }}" permanently?</span>
+            <button class="delete-button" (click)="deleteConcept()" [disabled]="saving()">
+              Yes, delete
+            </button>
+            <button class="subtle-button" (click)="confirmingDelete.set(false)">Keep it</button>
+          } @else {
+            <button class="delete-button" (click)="confirmingDelete.set(true)">
+              <app-icon name="trash" width="1em" height="1em"></app-icon>
+              Delete
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,13 @@
+# pnpm asks, per dependency, whether its install scripts may run. Everything
+# here is set to false: the build, the tests and the dev server were all
+# verified working without any of them, so there is no reason to run install-time
+# code from these packages. Flip one to true if a tool actually turns out to
+# need it (the symptom is usually a missing native binary at runtime).
+allowBuilds:
+  '@firebase/util': false
+  '@parcel/watcher': false
+  esbuild: false
+  lmdb: false
+  msgpackr-extract: false
+  protobufjs: false
+  re2: false

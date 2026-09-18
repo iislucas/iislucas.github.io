@@ -1,0 +1,33 @@
+<div class="centered-container not-found-container">
+  <div class="card not-found-card">
+    <div class="error-badge">
+      <app-icon name="error" width="1.4em" height="1.4em"></app-icon>
+      <span class="code">404</span>
+    </div>
+
+    <h1>Page not found</h1>
+
+    <p class="description">
+      There is nothing at this address. It may have been renamed, or the link may be mistyped.
+    </p>
+
+    <div class="attempted-path">
+      <code>{{ currentPath() }}</code>
+    </div>
+
+    <div class="action-buttons">
+      <a class="button primary-button" [href]="homeHref()">
+        <app-icon name="home" width="1em" height="1em"></app-icon>
+        Home
+      </a>
+      <a class="outlined-button" [href]="conceptsHref()">
+        <app-icon name="menu_book" width="1em" height="1em"></app-icon>
+        Concept Gallery
+      </a>
+      <button class="outlined-button" (click)="goBack()">
+        <app-icon name="arrow_back" width="1em" height="1em"></app-icon>
+        Go back
+      </button>
+    </div>
+  </div>
+</div>

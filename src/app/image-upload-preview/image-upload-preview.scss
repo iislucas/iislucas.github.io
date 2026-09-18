@@ -1,0 +1,167 @@
+@use "../../scss_variables" as *;
+
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
+
+.image-uploader-container {
+  border-radius: 8px;
+  text-align: left;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+}
+
+.upload-prompt {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.upload-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.preview-area {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 15px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.crop-container {
+  width: 100%;
+  max-width: 400px; /* Max width for the crop window */
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid $border-color-light;
+  border-radius: 4px;
+  background-color: #ffffff;
+  /* Checkerboard pattern to visualize transparent backgrounds */
+  background-image:
+    linear-gradient(45deg, #f1f5f9 25%, transparent 25%),
+    linear-gradient(-45deg, #f1f5f9 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #f1f5f9 75%),
+    linear-gradient(-45deg, transparent 75%, #f1f5f9 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+  cursor: move;
+  touch-action: none;
+}
+
+.crop-container img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  max-width: none; /* Allow image to be larger than container */
+  transform-origin: 0 0;
+  cursor: move;
+  user-select: none;
+}
+
+.crop-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid $button-active-bg-color;
+  box-sizing: border-box;
+  pointer-events: none; /* Let clicks pass through to image */
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5); /* Dim area outside frame */
+}
+
+.controls {
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.aspect-ratio-control {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-size: 0.9em;
+    font-weight: 500;
+    color: $text-secondary;
+  }
+
+  .ratio-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+
+    .ratio-btn {
+      font-size: 0.8rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+
+      &.active {
+        background-color: $button-active-bg-color;
+        border-color: $focus-ring-color;
+        font-weight: 600;
+        color: $text-primary;
+      }
+    }
+
+    .ratio-reset-btn {
+      font-size: 0.8rem;
+      padding: 3px 8px;
+      color: $text-muted;
+
+      &:hover {
+        color: $text-primary;
+      }
+    }
+  }
+}
+
+.zoom-control {
+  display: flex;
+  align-items: center;
+  gap: 8px 10px;
+  flex-wrap: wrap;
+
+  label {
+    font-size: 0.9em;
+    font-weight: 500;
+  }
+
+  input[type="range"] {
+    flex: 1;
+    min-width: 80px;
+  }
+
+  span {
+    min-width: 35px;
+    text-align: right;
+    font-family: monospace;
+    font-size: 0.9em;
+  }
+
+  .subtle-button {
+    font-size: 0.85em;
+  }
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 10px;
+}

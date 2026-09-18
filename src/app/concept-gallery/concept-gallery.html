@@ -1,0 +1,83 @@
+<div class="centered-container gallery-page">
+  <header class="gallery-header">
+    <div class="heading-row">
+      <h1>Concept Gallery</h1>
+      @if (isAdmin()) {
+        <a class="button new-concept-button" [href]="newConceptHref()">
+          <app-icon name="add" width="1em" height="1em"></app-icon>
+          New concept
+        </a>
+      }
+    </div>
+    @if (content.profile().galleryIntroMarkdown) {
+      <app-markdown-viewer
+        class="gallery-intro"
+        [markdown]="content.profile().galleryIntroMarkdown"
+      ></app-markdown-viewer>
+    }
+  </header>
+
+  <div class="filters">
+    <div class="search-box">
+      <app-icon name="search" width="1.1em" height="1.1em"></app-icon>
+      <input
+        type="search"
+        placeholder="Search concepts"
+        aria-label="Search concepts"
+        [value]="query()"
+        (input)="setQuery($any($event.target).value)"
+      />
+    </div>
+    @if (allTags().length > 0) {
+      <div class="tag-row">
+        @for (tag of allTags(); track tag) {
+          <button
+            class="tag-chip filter-tag"
+            [class.selected]="selectedTag() === tag"
+            (click)="toggleTag(tag)"
+          >
+            {{ tag }}
+          </button>
+        }
+      </div>
+    }
+    @if (hasFilters()) {
+      <button class="inline-link-button" (click)="clearFilters()">Clear filters</button>
+    }
+  </div>
+
+  @if (conceptsError(); as message) {
+    <div class="error-container">{{ message }}</div>
+  } @else if (!conceptsLoaded()) {
+    <div class="loading-note">Loading concepts…</div>
+  } @else if (filteredConcepts().length === 0) {
+    <div class="empty-note">
+      @if (hasFilters()) {
+        No concepts match those filters.
+      } @else {
+        No concepts yet. Run <code>pnpm run seed</code> to load the
+        <code>content/concepts/</code> folder into Firestore.
+      }
+    </div>
+  } @else {
+    <div class="concept-grid">
+      @for (concept of publishedConcepts(); track concept.slug) {
+        <app-concept-card [concept]="concept"></app-concept-card>
+      }
+    </div>
+
+    @if (draftConcepts().length > 0) {
+      <section class="drafts-section">
+        <h2>In progress</h2>
+        <p class="drafts-note">
+          Drafts are visible to you only — they stay unreadable to everyone else until published.
+        </p>
+        <div class="concept-grid">
+          @for (concept of draftConcepts(); track concept.slug) {
+            <app-concept-card [concept]="concept"></app-concept-card>
+          }
+        </div>
+      </section>
+    }
+  }
+</div>

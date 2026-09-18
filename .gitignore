@@ -1,0 +1,32 @@
+# Compiled output
+/dist
+/tmp
+/out-tsc
+
+# Node
+node_modules/
+npm-debug.log
+pnpm-debug.log
+
+# IDEs and editors
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.history/*
+
+# Miscellaneous
+/.angular/cache
+.sass-cache/
+/coverage
+.DS_Store
+Thumbs.db
+
+# Environment files (your real Firebase web config; see SETUP.md)
+src/environments/environment.local.ts
+
+# Firebase
+.firebase/
+.firebaserc
+firebase-debug.log
+firestore-debug.log

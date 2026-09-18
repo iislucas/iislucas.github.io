@@ -1,0 +1,25 @@
+@use '../../scss_variables' as *;
+
+footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25em;
+  padding: 1.25em 1em;
+  margin-top: 2em;
+  background-color: $footer-bg-color;
+  color: $footer-text-color;
+  border-top: 3px solid $footer-border-color;
+  font-size: 0.9em;
+
+  a {
+    color: $footer-text-color;
+    text-decoration: underline;
+
+    &:hover {
+      color: $footer-text-color;
+      opacity: 0.85;
+    }
+  }
+}
