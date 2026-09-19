@@ -96,6 +96,11 @@ export function googleSignInErrorMessage(code: string | undefined): string {
       return 'We could not reach the server. Please check your connection and try again.';
     case 'auth/operation-not-allowed':
       return 'Google sign-in is not available right now. Please use a password instead.';
+    // Not a user error at all: the address the site is being served from is
+    // missing from the project's authorized domains, so the code is kept in
+    // the text because it is the whole diagnosis.
+    case 'auth/unauthorized-domain':
+      return 'Google sign-in is not set up for this address (auth/unauthorized-domain). Please use a password instead.';
     default:
       return `Google sign-in failed (${code || 'unknown error'}). Please try again, or use a password instead.`;
   }

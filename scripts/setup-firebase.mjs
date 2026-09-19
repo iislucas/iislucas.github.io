@@ -9,7 +9,8 @@
  *   4. registers a web app and reads its SDK config,
  *   5. writes src/environments/environment.local.ts from that config,
  *   6. turns on Email/Password sign-in,
- *   7. authorizes the domains the app is served from.
+ *   7. authorizes the domains the app is served from, and says where to
+ *      add them by hand when it cannot.
  *
  *   pnpm run firebase:setup
  *   pnpm run firebase:setup -- --project=my-project --location=eur3
@@ -57,8 +58,17 @@ const REQUIRED_APIS = [
   'identitytoolkit.googleapis.com',
 ];
 
-// Domains allowed to complete a sign-in. Firebase seeds localhost and its own
-// two domains; this adds where the site actually lives.
+// The domains Firebase seeds on a new project. Naming them here means every
+// run re-asserts them, so a list that lost one heals rather than staying
+// broken; `<project>.firebaseapp.com` is the one that matters most, because it
+// hosts the OAuth redirect handler.
+const defaultAuthorizedDomains = (projectId) => [
+  'localhost',
+  `${projectId}.firebaseapp.com`,
+  `${projectId}.web.app`,
+];
+
+// Where the site actually lives, which Firebase has no way to guess.
 const EXTRA_AUTHORIZED_DOMAINS = ['iislucas.github.io'];
 
 function parseArgs(argv) {
@@ -387,21 +397,45 @@ async function enableEmailSignIn(projectId, token, dryRun) {
   ok('Email/Password sign-in enabled');
 }
 
+/**
+ * Brings the authorized sign-in domain list up to date, and reports where to
+ * finish the job by hand whenever it cannot.
+ *
+ * Firebase checks a sign-in against the browser's address bar, not against the
+ * configured authDomain, so a domain missing from this list is
+ * `auth/unauthorized-domain` in the browser and nothing else. The list is
+ * written back whole, which makes the read before it load-bearing: anything
+ * absent from `existing` is deleted rather than left alone. Every path that
+ * cannot safely write therefore stops and prints the console link, because a
+ * silent skip here is invisible until someone tries to sign in.
+ */
 async function authorizeDomains(projectId, token, dryRun) {
   step('Authorizing the sign-in domains');
+
+  const wanted = [...defaultAuthorizedDomains(projectId), ...EXTRA_AUTHORIZED_DOMAINS];
 
   const base = await identityToolkitBase(projectId, token);
   const configUrl = `https://identitytoolkit.googleapis.com/${base}/projects/${projectId}/config`;
   const current = await api(configUrl, { token });
   if (!current.ok) {
-    warn(`Skipped: could not read the auth config (${describeApiError(current)})`);
+    warn(`Could not read the authorized domains (${describeApiError(current)}).`);
+    printAuthorizedDomainsInstructions(projectId, wanted);
     return;
   }
 
-  const existing = current.data?.authorizedDomains ?? [];
-  const toAdd = EXTRA_AUTHORIZED_DOMAINS.filter((domain) => !existing.includes(domain));
+  // A response without the field cannot be read as "no domains are
+  // authorized": the write that followed would keep only what is listed here
+  // and drop whatever Firebase seeded, including the redirect handler.
+  const existing = current.data?.authorizedDomains;
+  if (!Array.isArray(existing)) {
+    warn('The auth config returned no domain list, and overwriting it would drop the defaults.');
+    printAuthorizedDomainsInstructions(projectId, wanted);
+    return;
+  }
+
+  const toAdd = wanted.filter((domain) => !existing.includes(domain));
   if (toAdd.length === 0) {
-    skip('the sign-in domains are already authorized');
+    skip(`already authorized: ${wanted.join(', ')}`);
     return;
   }
   if (dryRun) {
@@ -415,9 +449,41 @@ async function authorizeDomains(projectId, token, dryRun) {
     token,
   });
   if (!updated.ok) {
-    fail(`Could not authorize ${toAdd.join(', ')}: ${describeApiError(updated)}`);
+    // Not fatal: email/password sign-in works without this, so say what is
+    // missing and carry on rather than killing an otherwise complete setup.
+    warn(`Could not authorize ${toAdd.join(', ')}: ${describeApiError(updated)}`);
+    printAuthorizedDomainsInstructions(projectId, toAdd);
+    return;
+  }
+
+  // Read back rather than trusting the PATCH. A write that reports success
+  // without sticking leaves precisely the state this step exists to prevent,
+  // and it stays invisible until a browser hits it.
+  const verify = await api(configUrl, { token });
+  if (!verify.ok) {
+    ok(`authorized ${toAdd.join(', ')} — could not read back to confirm`);
+    return;
+  }
+  const now = verify.data?.authorizedDomains ?? [];
+  const stillMissing = wanted.filter((domain) => !now.includes(domain));
+  if (stillMissing.length > 0) {
+    warn(`Still not authorized after the write: ${stillMissing.join(', ')}`);
+    printAuthorizedDomainsInstructions(projectId, stillMissing);
+    return;
   }
   ok(`authorized ${toAdd.join(', ')}`);
+}
+
+function printAuthorizedDomainsInstructions(projectId, missing) {
+  console.log(
+    `\n    Add ${missing.join(', ')} here:\n` +
+      `      https://console.firebase.google.com/project/${projectId}/authentication/settings\n` +
+      `\n    ${dim('That is Authentication \u2192 Settings \u2192 Authorized domains.')}\n` +
+      `    ${dim('Firebase checks the browser address bar, so add the origin you load the site from:')}\n` +
+      `    ${dim('localhost for pnpm start, iislucas.github.io for the deployed site.')}\n` +
+      `    ${dim(`${projectId}.firebaseapp.com hosts the OAuth redirect handler \u2014 without it,`)}\n` +
+      `    ${dim('Google sign-in fails from every origin while password sign-in keeps working.')}\n`,
+  );
 }
 
 /**
