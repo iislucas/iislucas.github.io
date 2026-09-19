@@ -1,6 +1,6 @@
 # iislucas.github.io
 
-My personal site and Concept Gallery: an Angular app on GitHub Pages, with
+My personal site and Concept Gallery: an Angular app on Firebase Hosting, with
 Firebase Auth and Firestore behind it so the content can be edited in place
 rather than through a commit.
 
@@ -8,15 +8,15 @@ rather than through a commit.
 
 ## What's here
 
-| Path | What it is |
-| --- | --- |
-| `/` | Landing page — the profile document, rendered from markdown |
-| `/concepts` | The Concept Gallery, filterable by text and tag |
-| `/concepts/:slug` | One concept |
-| `/login` | Sign in — for the site's editor only; nothing links to it |
+| Path              | What it is                                                  |
+| ----------------- | ----------------------------------------------------------- |
+| `/`               | Landing page — the profile document, rendered from markdown |
+| `/concepts`       | The Concept Gallery, filterable by text and tag             |
+| `/concepts/:slug` | One concept                                                 |
+| `/login`          | Sign in — for the site's editor only; nothing links to it   |
 
 There are no edit pages. Signed in as an admin, the header's **Edit** button
-turns on *edit mode*: every field on the page can then be tapped and changed in
+turns on _edit mode_: every field on the page can then be tapped and changed in
 place (accept ✓, cancel ✕, undo ↶), list entries such as papers and links can
 be selected to move, delete or add above / below, and the gallery gets a
 "New concept" button. See `src/app/edit-mode/`.
@@ -78,8 +78,6 @@ reports on both rather than pretending otherwise. See [SETUP.md](SETUP.md).
 
 ## Deployment
 
-Pushing to `main` builds and publishes to GitHub Pages
-(`.github/workflows/deploy-pages.yml`). `pnpm run deploy` publishes the
-Firestore rules and the site to Firebase Hosting from your machine. Content
-edits do not need a deploy —
-they are Firestore writes, live immediately.
+`pnpm run deploy` builds, then publishes the Firestore rules and the site to
+Firebase Hosting from your machine. Content edits do not need a deploy — they
+are Firestore writes, live immediately.

@@ -1,8 +1,8 @@
 # Setup
 
-The site is an Angular app deployed to GitHub Pages, with Firebase providing
+The site is an Angular app deployed to Firebase Hosting, with Firebase providing
 authentication and the Firestore database behind it. Nothing here is needed to
-*read* the site — only to run it locally or to point it at your own project.
+_read_ the site — only to run it locally or to point it at your own project.
 
 Most of this is scripted. The short version, from a clean clone:
 
@@ -62,15 +62,15 @@ SEED_EMAIL=you@example.com SEED_PASSWORD=... pnpm run seed -- --emulator
 Takes a bare Google Cloud project and does everything the Firebase console
 would have you click through:
 
-| Step | What it does |
-| --- | --- |
-| APIs | Enables Firebase, Firestore, Identity Toolkit and friends |
-| Firebase | Adds Firebase to the Cloud project |
-| Firestore | Creates the database (default location `nam5`) |
-| Web app | Registers one, or reuses the existing one |
-| Config | Writes `src/environments/environment.local.ts` from its SDK config |
-| Auth | Turns on Email/Password sign-in; reports on Google sign-in |
-| Domains | Authorizes `iislucas.github.io`, re-asserts the defaults, reports what it could not set |
+| Step      | What it does                                                                            |
+| --------- | --------------------------------------------------------------------------------------- |
+| APIs      | Enables Firebase, Firestore, Identity Toolkit and friends                               |
+| Firebase  | Adds Firebase to the Cloud project                                                      |
+| Firestore | Creates the database (default location `nam5`)                                          |
+| Web app   | Registers one, or reuses the existing one                                               |
+| Config    | Writes `src/environments/environment.local.ts` from its SDK config                      |
+| Auth      | Turns on Email/Password sign-in; reports on Google sign-in                              |
+| Domains   | Authorizes `iislucas.github.io`, re-asserts the defaults, reports what it could not set |
 
 It authenticates with the credentials from `gcloud auth login` — no service
 account key, and no second `gcloud auth application-default login`.
@@ -101,13 +101,13 @@ OAuth client API, which creates clients but will not let you set redirect URIs.
 `firebase:setup` deliberately does not try to enable it for you. The API would
 accept a provider with no client behind it, and the result reads as configured
 in the console while failing in the browser — a worse place to end up than an
-honest manual step. What the script does instead is *report*, so you always
+honest manual step. What the script does instead is _report_, so you always
 know which of three states you are in:
 
-| What it prints | Meaning |
-| --- | --- |
-| `Google sign-in is on and has an OAuth client` | Nothing to do |
-| `Google sign-in is off — this is the one step to do by hand` | Click the toggle |
+| What it prints                                               | Meaning                           |
+| ------------------------------------------------------------ | --------------------------------- |
+| `Google sign-in is on and has an OAuth client`               | Nothing to do                     |
+| `Google sign-in is off — this is the one step to do by hand` | Click the toggle                  |
 | `on but has no OAuth client, so it will fail in the browser` | Broken; re-save it in the console |
 
 If you already have a suitable OAuth client, it can be applied without the
@@ -223,40 +223,10 @@ Hosting (`<project>.web.app`), using your `firebase login` and the project in
 `pnpm run deploy:hosting` does only the site; `pnpm run deploy:rules` only the
 rules.
 
-Hosting rewrites every path to `index.html`, so deep links work without the
-`404.html` trick GitHub Pages needs. `<project>.web.app` and
-`<project>.firebaseapp.com` are authorized for sign-in by default.
-
-## Deploy to GitHub Pages
-
-`.github/workflows/deploy-pages.yml` builds and publishes on every push to
-`main`.
-
-1. **Settings → Pages → Build and deployment → Source: GitHub Actions.**
-2. **Settings → Secrets and variables → Actions → Variables** — add:
-
-   | Variable | From |
-   | --- | --- |
-   | `FIREBASE_API_KEY` | `firebase.apiKey` in `environment.local.ts` |
-   | `FIREBASE_AUTH_DOMAIN` | `firebase.authDomain` |
-   | `FIREBASE_PROJECT_ID` | `firebase.projectId` |
-   | `FIREBASE_STORAGE_BUCKET` | `firebase.storageBucket` |
-   | `FIREBASE_MESSAGING_SENDER_ID` | `firebase.messagingSenderId` |
-   | `FIREBASE_APP_ID` | `firebase.appId` |
-   | `FIREBASE_MEASUREMENT_ID` | optional |
-   | `ADMIN_EMAIL` | contact address shown on the login page |
-
-   Repository *variables*, not secrets: the build prints them into the bundle
-   either way, and variables stay readable in logs, which makes a wrong value
-   diagnosable.
-
-`pnpm run firebase:setup` already authorized `iislucas.github.io` for sign-in.
-It reads the list back afterwards, so a run that ends without a warning about
-authorized domains is a run that confirmed them.
-
-The build copies `index.html` to `404.html`, which is how a static host serves
-deep links like `/concepts/inner-gold`: Pages returns `404.html` for any
-unmatched path, and the app's router reads the URL as usual.
+Hosting rewrites every path to `index.html`, so deep links like
+`/concepts/inner-gold` work: the app's router reads the URL as usual.
+`<project>.web.app` and `<project>.firebaseapp.com` are authorized for sign-in
+by default.
 
 ## Troubleshooting
 
@@ -277,10 +247,11 @@ Get started once in the console, then re-run it.
 page is served from is missing from Authentication → Settings → Authorized
 domains. Re-run `pnpm run firebase:setup`: it adds the ones it can and prints
 the console link for anything it could not. The check is against the browser's address bar, so add the one you are
-actually on: `localhost` for `pnpm start`, `iislucas.github.io` for the live
+actually on: `localhost` for `pnpm start`, `<project>.web.app` for the live
 site. `<project>.firebaseapp.com` must be there too — it hosts the OAuth
 redirect handler, so without it Google sign-in fails from every address at
 once, while password sign-in carries on working.
 
-**Deep links 404 on the live site** — the deploy did not produce `404.html`;
-check the "Add SPA fallback" step in the workflow run.
+**Deep links 404 on the live site** — Hosting's rewrite of every path to
+`index.html` is in `firebase.json`; check it survived, and re-run
+`pnpm run deploy`.
