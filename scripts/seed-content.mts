@@ -8,11 +8,24 @@
  *   pnpm run seed -- --emulator      # against a running local emulator
  *   pnpm run seed -- --dry-run       # parse and report, write nothing
  *
- * Auth: the script signs in with email and password, because Firestore rules
- * (not an admin key) are what authorize the writes. It reads SEED_EMAIL and
- * SEED_PASSWORD from the environment, so no credential is ever written to a
- * file here. That account needs an `acl/<email>` document with isAdmin: true —
- * exactly the same check the app makes.
+ * There are two ways it can authenticate, and it picks between them so that
+ * the common case needs no password:
+ *
+ *   via gcloud (the default) — writes through the Firestore REST API with the
+ *     credentials from `gcloud auth login`, the same way scripts/set-admin.mjs
+ *     does. Nothing to type, and it works for an account that signs in with
+ *     Google and so has no password at all. These are project-owner
+ *     credentials, so they bypass the security rules.
+ *
+ *   via the rules (`--via-rules`, or by setting SEED_EMAIL and SEED_PASSWORD)
+ *     — signs in as an ordinary user with the client SDK, so every write is
+ *     checked by firestore.rules. Slower and needs a password, but a
+ *     successful run also proves the account's `acl/<email>` document is
+ *     right. Worth using once after setting a project up.
+ *
+ * Credentials are never read from or written to a file here: the password
+ * path takes SEED_EMAIL and SEED_PASSWORD from the environment, and the
+ * gcloud path uses a short-lived token from the CLI.
  */
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
@@ -27,6 +40,10 @@ const contentDir = join(repoRoot, 'content');
 const args = new Set(process.argv.slice(2));
 const useEmulator = args.has('--emulator');
 const dryRun = args.has('--dry-run');
+// An explicit --via-rules, or a password in the environment, selects the
+// rules-checked path; otherwise gcloud credentials are used.
+const viaRules =
+  args.has('--via-rules') || (!!process.env['SEED_EMAIL'] && !!process.env['SEED_PASSWORD']);
 
 interface FrontMatter {
   [key: string]: string | string[] | boolean | number | { label: string; url: string }[];
@@ -183,6 +200,27 @@ async function main() {
   }
 
   // --- Write ----------------------------------------------------------------
+  const documents: { path: string; fields: Record<string, unknown> }[] = [
+    ...concepts.map(({ slug, ...fields }) => ({ path: `concepts/${slug}`, fields })),
+    { path: 'site/profile', fields: profile },
+  ];
+
+  if (viaRules) {
+    await writeViaRules(documents);
+  } else {
+    await writeViaGcloud(documents);
+  }
+
+  console.log('\nDone.');
+  process.exit(0);
+}
+
+/**
+ * Writes with the client SDK, signed in as an ordinary user, so firestore.rules
+ * checks every write. Needs a password, which an account that only ever signs
+ * in with Google will not have.
+ */
+async function writeViaRules(documents: { path: string; fields: Record<string, unknown> }[]) {
   const { initializeApp } = await import('firebase/app');
   const { connectAuthEmulator, getAuth, signInWithEmailAndPassword } = await import(
     'firebase/auth'
@@ -210,24 +248,119 @@ async function main() {
   const password = process.env['SEED_PASSWORD'];
   if (!email || !password) {
     console.error(
-      '\nSet SEED_EMAIL and SEED_PASSWORD to an admin account before seeding, e.g.\n' +
-        '  SEED_EMAIL=you@example.com SEED_PASSWORD=... pnpm run seed\n' +
-        'That account needs an acl/<email> document with isAdmin: true (see SETUP.md).',
+      '\n--via-rules needs an account to sign in as:\n' +
+        '  SEED_EMAIL=you@example.com SEED_PASSWORD=... pnpm run seed -- --via-rules\n' +
+        'That account needs an acl/<email> document with isAdmin: true, and a verified\n' +
+        'email address. Drop --via-rules to seed with your gcloud credentials instead,\n' +
+        'which needs no password (see SETUP.md).',
     );
     process.exit(1);
   }
-  await signInWithEmailAndPassword(auth, email, password);
-  console.log(`\nSigned in as ${email}.`);
 
-  for (const concept of concepts) {
-    const { slug, ...fields } = concept;
-    await setDoc(doc(db, 'concepts', slug), fields);
-    console.log(`  wrote concepts/${slug}`);
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (error) {
+    const code = (error as { code?: string }).code ?? '';
+    console.error(`\nCould not sign in as ${email}: ${code || error}`);
+    if (code === 'auth/invalid-credential' || code === 'auth/wrong-password') {
+      console.error(
+        'If this account signs in with Google it has no password. Drop --via-rules\n' +
+          'and SEED_PASSWORD to seed with your gcloud credentials instead.',
+      );
+    }
+    process.exit(1);
   }
-  await setDoc(doc(db, 'site', 'profile'), profile);
-  console.log('  wrote site/profile');
-  console.log('\nDone.');
-  process.exit(0);
+  console.log(`\nSigned in as ${email}; writing through firestore.rules.`);
+
+  for (const document of documents) {
+    const [collection, docId] = document.path.split('/');
+    await setDoc(doc(db, collection, docId), document.fields);
+    console.log(`  wrote ${document.path}`);
+  }
+}
+
+/**
+ * Writes through the Firestore REST API with the credentials from
+ * `gcloud auth login` — no password, and no dependency on the account having
+ * one. These are project-owner credentials, so the rules are bypassed; that is
+ * the same authority the Firebase console writes with.
+ */
+async function writeViaGcloud(documents: { path: string; fields: Record<string, unknown> }[]) {
+  const { accessToken, api, describeApiError, requireGcloud, resolveProjectId, setQuotaProject } =
+    await import('./lib/gcp.mjs');
+
+  let base: string;
+  let token: string;
+  let label: string;
+
+  if (useEmulator) {
+    const projectId = 'demo-iislucas-site';
+    base = `http://127.0.0.1:8080/v1/projects/${projectId}/databases/(default)/documents`;
+    token = 'owner';
+    label = `the emulator (${projectId})`;
+  } else {
+    requireGcloud();
+    const projectId = resolveProjectId(null);
+    setQuotaProject(projectId);
+    base = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents`;
+    token = accessToken();
+    label = projectId;
+  }
+
+  console.log(`\nWriting to ${label} with your gcloud credentials.`);
+
+  for (const document of documents) {
+    const result = await api(`${base}/${document.path}`, {
+      method: 'PATCH',
+      body: { fields: toFirestoreFields(document.fields) },
+      token,
+    });
+    if (!result.ok) {
+      console.error(`\nFailed to write ${document.path}: ${describeApiError(result)}`);
+      if (result.status === 403) {
+        console.error(
+          'The signed-in account needs edit access to the project.\n' +
+            'Check `gcloud config get-value account` and `gcloud auth login`.',
+        );
+      }
+      process.exit(1);
+    }
+    console.log(`  wrote ${document.path}`);
+  }
+}
+
+/**
+ * Converts a plain object into Firestore's REST representation, where every
+ * value is tagged with its type. Only the shapes this content actually uses
+ * are handled — strings, numbers, booleans, arrays and nested objects — and
+ * anything else throws rather than being silently written as the wrong type.
+ */
+function toFirestoreFields(fields: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(fields)) {
+    out[key] = toFirestoreValue(value);
+  }
+  return out;
+}
+
+function toFirestoreValue(value: unknown): Record<string, unknown> {
+  if (value === null || value === undefined) return { nullValue: null };
+  if (typeof value === 'string') return { stringValue: value };
+  if (typeof value === 'boolean') return { booleanValue: value };
+  if (typeof value === 'number') {
+    // Firestore distinguishes the two, and the REST form carries an integer as
+    // a string. `order` is the only number here, but keep both paths honest.
+    return Number.isInteger(value)
+      ? { integerValue: String(value) }
+      : { doubleValue: value };
+  }
+  if (Array.isArray(value)) {
+    return { arrayValue: { values: value.map(toFirestoreValue) } };
+  }
+  if (typeof value === 'object') {
+    return { mapValue: { fields: toFirestoreFields(value as Record<string, unknown>) } };
+  }
+  throw new Error(`Cannot convert a ${typeof value} to a Firestore value.`);
 }
 
 main().catch((err) => {

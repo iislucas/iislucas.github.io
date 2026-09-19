@@ -49,6 +49,7 @@ pnpm run firebase:setup         # prepare a Google Cloud project to back the sit
 pnpm run admin:add <email>      # grant someone edit access (admin:remove, admin:list)
 pnpm run deploy:rules           # deploy firestore.rules
 pnpm run seed                   # write content/ into Firestore (--dry-run to preview)
+                                # add --via-rules to write as a signed-in user instead
 
 pnpm start                      # dev server against your Firebase project
 pnpm run start:emulator         # dev server against local emulators
