@@ -1,0 +1,25 @@
+{
+  "$comment": "Provenance for the vendored markdown editor. See scripts/sync-markdown-editor.mjs and vendor/README.md.",
+  "upstream": "https://github.com/iislucas/ilc-members-manager",
+  "ref": "main",
+  "syncedCommit": "cd051bab656cee744d690e3abe56b9ddd8e219d2",
+  "syncedAt": "2026-09-18T23:22:52.110Z",
+  "paths": [
+    {
+      "from": "src/app/markdown-editor",
+      "to": "src/app/markdown-editor"
+    },
+    {
+      "from": "src/app/image-upload-preview",
+      "to": "src/app/image-upload-preview"
+    },
+    {
+      "from": "src/app/icons/icon.component.ts",
+      "to": "src/app/icons/icon.component.ts"
+    },
+    {
+      "from": "src/app/icons/icon-data.ts",
+      "to": "src/app/icons/icon-data.ts"
+    }
+  ]
+}

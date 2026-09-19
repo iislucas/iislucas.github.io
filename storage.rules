@@ -1,0 +1,40 @@
+rules_version = '2';
+
+/*
+ * Cloud Storage rules. The only uploads are images pasted or picked inside the
+ * markdown editor, which land under `images/`. They are public to read (they
+ * get embedded in public pages) and admin-only to write.
+ *
+ * Storage rules cannot read Firestore, so the `acl/{email}` document that
+ * authorizes everything else is not reachable from here. Instead, put your
+ * admin address in ADMIN_EMAIL below before deploying these rules — it is the
+ * one place in the repo that has to name it. (A custom auth claim is also
+ * accepted, for the case where you later add a Cloud Function that sets one.)
+ *
+ * See SETUP.md, "Enable image uploads".
+ */
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isAdmin() {
+      // CHANGE THIS to your own address before running `firebase deploy --only storage`.
+      let ADMIN_EMAIL = 'YOUR_ADMIN_EMAIL';
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && (request.auth.token.email == ADMIN_EMAIL || request.auth.token.admin == true);
+    }
+
+    match /images/{allPaths=**} {
+      allow read: if true;
+      // 10MB ceiling and an image-only content type, so a compromised session
+      // cannot turn the bucket into general file hosting.
+      allow write: if isAdmin()
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

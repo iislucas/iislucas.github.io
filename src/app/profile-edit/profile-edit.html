@@ -1,0 +1,134 @@
+<div class="centered-container edit-page">
+  @if (!isAdmin()) {
+    <div class="card">
+      <h2>Not editable</h2>
+      <p>
+        You need to be signed in as an admin to edit the landing page.
+        <a href="/login">Sign in</a>.
+      </p>
+    </div>
+  } @else {
+    <header class="edit-header">
+      <h1>Edit landing page</h1>
+      <a class="inline-link-button" [href]="homeHref()">Cancel</a>
+    </header>
+
+    @if (errorMessage(); as message) {
+      <div class="error-container">{{ message }}</div>
+    }
+
+    <label class="field">
+      <span class="field-label">Name</span>
+      <input
+        type="text"
+        [ngModel]="draft().name"
+        (ngModelChange)="updateField('name', $event)"
+        name="name"
+      />
+    </label>
+
+    <label class="field">
+      <span class="field-label">Tagline</span>
+      <input
+        type="text"
+        [ngModel]="draft().tagline"
+        (ngModelChange)="updateField('tagline', $event)"
+        name="tagline"
+        placeholder="Shown under your name."
+      />
+    </label>
+
+    <label class="field">
+      <span class="field-label">Portrait image URL</span>
+      <input
+        type="url"
+        [ngModel]="draft().photoUrl"
+        (ngModelChange)="updateField('photoUrl', $event)"
+        name="photoUrl"
+        placeholder="Optional."
+      />
+    </label>
+
+    <div class="field">
+      <span class="field-label">Links</span>
+      @for (link of draft().links; track $index) {
+        <div class="link-row">
+          <input
+            type="text"
+            class="link-label"
+            placeholder="Label"
+            [ngModel]="link.label"
+            (ngModelChange)="updateLink($index, 'label', $event)"
+            [name]="'linkLabel' + $index"
+          />
+          <input
+            type="url"
+            class="link-url"
+            placeholder="https://…"
+            [ngModel]="link.url"
+            (ngModelChange)="updateLink($index, 'url', $event)"
+            [name]="'linkUrl' + $index"
+          />
+          <button
+            class="icon-only-button"
+            title="Move up"
+            [disabled]="$index === 0"
+            (click)="moveLink($index, -1)"
+          >
+            <app-icon name="arrow_upward" width="1em" height="1em"></app-icon>
+          </button>
+          <button
+            class="icon-only-button"
+            title="Move down"
+            [disabled]="$index === draft().links.length - 1"
+            (click)="moveLink($index, 1)"
+          >
+            <app-icon name="arrow_downward" width="1em" height="1em"></app-icon>
+          </button>
+          <button
+            class="icon-only-button delete-button"
+            title="Remove link"
+            (click)="removeLink($index)"
+          >
+            <app-icon name="close" width="1em" height="1em"></app-icon>
+          </button>
+        </div>
+      }
+      <button class="subtle-button add-link-button" (click)="addLink()">
+        <app-icon name="add" width="1em" height="1em"></app-icon>
+        Add a link
+      </button>
+    </div>
+
+    <div class="field">
+      <span class="field-label">About you</span>
+      <app-markdown-editor
+        bordered
+        [initialValue]="initialBio()"
+        [imageUploader]="imageUploader"
+        (changed)="updateField('bioMarkdown', $event)"
+      ></app-markdown-editor>
+    </div>
+
+    <div class="field">
+      <span class="field-label">Concept Gallery introduction</span>
+      <span class="field-hint">
+        The blurb at the top of the gallery, and under the teaser on this page.
+      </span>
+      <app-markdown-editor
+        bordered
+        class="short-editor"
+        [initialValue]="initialGalleryIntro()"
+        [imageUploader]="imageUploader"
+        (changed)="updateField('galleryIntroMarkdown', $event)"
+      ></app-markdown-editor>
+    </div>
+
+    <div class="actions">
+      <button class="primary-button" (click)="save()" [disabled]="saving()">
+        {{ saving() ? 'Saving…' : 'Save' }}
+      </button>
+      <a class="button" [href]="homeHref()">Cancel</a>
+    </div>
+  }
+</div>

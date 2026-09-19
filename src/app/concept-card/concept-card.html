@@ -1,0 +1,23 @@
+<a class="concept-card" [href]="href()">
+  @if (concept().imageUrl) {
+    <img class="card-image" [src]="concept().imageUrl" alt="" loading="lazy" />
+  }
+  <div class="card-body">
+    <div class="card-title-row">
+      <h3 class="card-title">{{ concept().title }}</h3>
+      @if (!concept().published) {
+        <span class="status-badge status-draft">Draft</span>
+      }
+    </div>
+    @if (concept().summary) {
+      <p class="card-summary">{{ concept().summary }}</p>
+    }
+    @if (concept().tags.length > 0) {
+      <div class="card-tags">
+        @for (tag of concept().tags; track tag) {
+          <span class="tag-chip">{{ tag }}</span>
+        }
+      </div>
+    }
+  </div>
+</a>

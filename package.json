@@ -1,0 +1,74 @@
+{
+  "name": "iislucas-github-io",
+  "version": "0.0.1",
+  "private": true,
+  "packageManager": "pnpm@11.22.0",
+  "scripts": {
+    "ng": "ng",
+    "setup:env": "node scripts/setup-env.mjs",
+    "firebase:setup": "node scripts/setup-firebase.mjs",
+    "admin:add": "node scripts/set-admin.mjs add",
+    "admin:remove": "node scripts/set-admin.mjs remove",
+    "admin:list": "node scripts/set-admin.mjs list",
+    "prestart": "pnpm run setup:env",
+    "start": "ng serve",
+    "start:emulator": "ng serve --configuration emulator",
+    "prebuild": "pnpm run setup:env",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "pnpm run test:once",
+    "test:once": "vitest run --no-color",
+    "test:watch": "vitest --no-color",
+    "emulator:start": "firebase emulators:start --only auth,firestore",
+    "deploy:rules": "firebase deploy --only firestore:rules",
+    "seed": "node --experimental-strip-types scripts/seed-content.mts",
+    "sync:markdown-editor": "node scripts/sync-markdown-editor.mjs",
+    "format": "prettier --write \"src/**/*.{ts,html,scss}\""
+  },
+  "prettier": {
+    "printWidth": 100,
+    "singleQuote": true,
+    "overrides": [
+      {
+        "files": "*.html",
+        "options": {
+          "parser": "angular"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "@angular/common": "^22.1.7",
+    "@angular/compiler": "^22.1.7",
+    "@angular/core": "^22.1.7",
+    "@angular/forms": "^22.1.7",
+    "@angular/platform-browser": "^22.1.7",
+    "@milkdown/core": "7.20.0",
+    "@milkdown/plugin-history": "7.20.0",
+    "@milkdown/plugin-indent": "7.20.0",
+    "@milkdown/plugin-listener": "7.20.0",
+    "@milkdown/preset-commonmark": "7.20.0",
+    "@milkdown/prose": "7.20.0",
+    "@milkdown/utils": "7.20.0",
+    "dompurify": "^3.4.15",
+    "firebase": "^12.19.0",
+    "marked": "^18.0.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@analogjs/platform": "^2.2.3",
+    "@analogjs/vite-plugin-angular": "^2.2.3",
+    "@analogjs/vitest-angular": "^2.2.3",
+    "@angular/build": "^22.1.7",
+    "@angular/cli": "^22.1.7",
+    "@angular/compiler-cli": "^22.1.7",
+    "@types/node": "^26.0.0",
+    "esbuild": "^0.28.2",
+    "firebase-tools": "^15.4.0",
+    "jsdom": "^28.1.0",
+    "prettier": "^3.6.2",
+    "typescript": "~6.0.0",
+    "vitest": "^4.0.18"
+  }
+}

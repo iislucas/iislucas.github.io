@@ -1,0 +1,59 @@
+@use '../../scss_variables' as *;
+
+.not-found-container {
+  padding: 3em 1em;
+  max-width: 560px;
+}
+
+.not-found-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.9em;
+}
+
+.error-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  color: $text-muted;
+
+  .code {
+    font-size: 1.1em;
+    font-weight: 600;
+  }
+}
+
+h1 {
+  margin: 0;
+  color: $text-primary;
+}
+
+.description {
+  margin: 0;
+  color: $text-secondary;
+  line-height: 1.5;
+}
+
+.attempted-path code {
+  background-color: $separator-color;
+  border: 1px solid $border-color-light;
+  border-radius: 0.25em;
+  padding: 0.2em 0.45em;
+  font-size: 0.9em;
+  word-break: break-all;
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  margin-top: 0.4em;
+
+  a,
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+  }
+}

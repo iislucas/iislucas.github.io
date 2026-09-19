@@ -1,0 +1,26 @@
+<div class="nav-bar">
+  <a class="site-title" [href]="homeHref()">
+    <span class="site-name">Lucas Dixon</span>
+  </a>
+
+  <nav class="nav-links">
+    <a class="nav-link" [class.active]="currentView() === Views.Home" [href]="homeHref()">About</a>
+    <a class="nav-link" [class.active]="isConceptsSection()" [href]="conceptsHref()"
+      >Concept Gallery</a
+    >
+  </nav>
+
+  <div class="nav-actions">
+    @if (showNewConceptAction()) {
+      <a class="nav-new-concept" [href]="newConceptHref()" title="Add a concept">
+        <app-icon name="add" width="1.1em" height="1.1em"></app-icon>
+        <span class="label">New concept</span>
+      </a>
+    }
+    @if (isLoggedIn()) {
+      <app-profile-menu></app-profile-menu>
+    } @else if (currentView() !== Views.Login) {
+      <a class="nav-sign-in-link" [href]="loginHref()">Sign in</a>
+    }
+  </div>
+</div>

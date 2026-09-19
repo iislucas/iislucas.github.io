@@ -1,0 +1,73 @@
+<div class="centered-container home-page">
+  @if (!profileLoaded()) {
+    <div class="loading-note">Loading…</div>
+  } @else if (isUnseeded()) {
+    <div class="card setup-card">
+      <h2>Nothing here yet</h2>
+      <p>
+        The landing page is empty because the <code>site/profile</code> document has not been
+        written yet. Run <code>pnpm run seed</code> to load the contents of the
+        <code>content/</code> folder into Firestore, or sign in as an admin and write it here.
+      </p>
+      @if (isAdmin()) {
+        <a class="button" [href]="editHref()">Edit the landing page</a>
+      }
+    </div>
+  } @else {
+    <header class="profile-header">
+      @if (profile().photoUrl) {
+        <img class="profile-photo" [src]="profile().photoUrl" alt="" />
+      }
+      <div class="profile-heading">
+        <h1>{{ profile().name }}</h1>
+        @if (profile().tagline) {
+          <p class="tagline">{{ profile().tagline }}</p>
+        }
+        @if (profile().links.length > 0) {
+          <div class="profile-links">
+            @for (link of profile().links; track link.url) {
+              <a class="tag-chip profile-link" [href]="link.url" target="_blank" rel="noopener">
+                {{ link.label || link.url }}
+                <app-icon name="launch" width="0.9em" height="0.9em"></app-icon>
+              </a>
+            }
+          </div>
+        }
+      </div>
+      @if (isAdmin()) {
+        <a class="outlined-button edit-button" [href]="editHref()">
+          <app-icon name="edit" width="1em" height="1em"></app-icon>
+          Edit
+        </a>
+      }
+    </header>
+
+    <app-markdown-viewer [markdown]="profile().bioMarkdown"></app-markdown-viewer>
+
+    @if (previewConcepts().length > 0) {
+      <section class="concepts-teaser">
+        <div class="teaser-heading">
+          <h2>Concept Gallery</h2>
+          <a class="inline-link-button" [href]="conceptsHref()">
+            See all
+            <app-icon name="arrow_forward" width="1em" height="1em"></app-icon>
+          </a>
+        </div>
+        @if (profile().galleryIntroMarkdown) {
+          <app-markdown-viewer
+            class="gallery-intro"
+            [markdown]="profile().galleryIntroMarkdown"
+          ></app-markdown-viewer>
+        }
+        <div class="concept-grid">
+          @for (concept of previewConcepts(); track concept.slug) {
+            <app-concept-card [concept]="concept"></app-concept-card>
+          }
+        </div>
+        @if (hasMoreConcepts()) {
+          <a class="button see-all-button" [href]="conceptsHref()">See the whole gallery</a>
+        }
+      </section>
+    }
+  }
+</div>

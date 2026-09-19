@@ -1,0 +1,57 @@
+<div class="centered-container concept-page">
+  <a class="back-link" [href]="galleryHref()">
+    <app-icon name="arrow_back" width="1em" height="1em"></app-icon>
+    Concept Gallery
+  </a>
+
+  @if (!conceptsLoaded()) {
+    <div class="loading-note">Loading…</div>
+  } @else if (notFound()) {
+    <div class="card not-found-card">
+      <h2>No such concept</h2>
+      <p>
+        There is no concept at <code>/concepts/{{ slug() }}</code
+        >. It may have been renamed, or it may still be a draft — drafts are only visible when
+        signed in as an admin.
+      </p>
+      <a class="button" [href]="galleryHref()">Back to the gallery</a>
+    </div>
+  } @else if (concept(); as concept) {
+    <article class="concept">
+      <header class="concept-header">
+        <div class="title-row">
+          <h1>{{ concept.title }}</h1>
+          @if (isAdmin()) {
+            <a class="outlined-button edit-button" [href]="editHref()">
+              <app-icon name="edit" width="1em" height="1em"></app-icon>
+              Edit
+            </a>
+          }
+        </div>
+        @if (!concept.published) {
+          <span class="status-badge status-draft">Draft — only you can see this</span>
+        }
+        @if (concept.summary) {
+          <p class="summary">{{ concept.summary }}</p>
+        }
+        @if (concept.tags.length > 0) {
+          <div class="tag-row">
+            @for (tag of concept.tags; track tag) {
+              <a class="tag-chip" [href]="tagHref(tag)">{{ tag }}</a>
+            }
+          </div>
+        }
+      </header>
+
+      @if (concept.imageUrl) {
+        <img class="hero-image" [src]="concept.imageUrl" alt="" />
+      }
+
+      <app-markdown-viewer [markdown]="concept.markdown"></app-markdown-viewer>
+
+      @if (concept.acknowledgement) {
+        <aside class="acknowledgement">{{ concept.acknowledgement }}</aside>
+      }
+    </article>
+  }
+</div>

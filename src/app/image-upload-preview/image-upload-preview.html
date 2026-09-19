@@ -1,0 +1,122 @@
+<div class="image-uploader-container">
+  @if (!imageUrl()) {
+    <label class="upload-prompt">
+      <span class="outlined-button upload-button">
+        <app-icon name="upload_file" /> {{ uploadPromptText() }}
+      </span>
+      <input type="file" (change)="onFileSelected($event)" accept="image/*" style="display: none;" />
+    </label>
+  } @else {
+    <div class="preview-area">
+      <div 
+        #container
+        class="crop-container" 
+        [style.aspectRatio]="resolvedAspectRatio()"
+        (mousedown)="onMouseDown($event)"
+        (mousemove)="onMouseMove($event)"
+        (mouseup)="onMouseUp()"
+        (mouseleave)="onMouseUp()"
+        (wheel)="onWheel($event)"
+        (touchstart)="onTouchStart($event)"
+        (touchmove)="onTouchMove($event)"
+        (touchend)="onTouchEnd()"
+        (touchcancel)="onTouchEnd()"
+      >
+        <img 
+          #previewImg
+          [src]="imageUrl()" 
+          crossorigin="anonymous"
+          alt="Preview" 
+          (load)="onImageLoad()"
+          [style.transform]="'translate(' + translateX() + 'px, ' + translateY() + 'px) scale(' + totalScale() + ')'"
+          style="transform-origin: 0 0; cursor: move; user-select: none;"
+        />
+        <div class="crop-frame"></div>
+      </div>
+
+      <div class="controls">
+        @if (allowAspectRatioChoice()) {
+          <div class="aspect-ratio-control">
+            <label>Aspect Ratio:</label>
+            <div class="ratio-buttons">
+              @if (naturalRatio(); as nr) {
+                <button
+                  type="button"
+                  class="subtle-button ratio-btn"
+                  [class.active]="activeRatioKey() === 'original'"
+                  (click)="selectRatioKey('original')"
+                  title="Use original image proportions"
+                >
+                  Original ({{ naturalRatioText() }})
+                </button>
+              }
+              <button
+                type="button"
+                class="subtle-button ratio-btn"
+                [class.active]="activeRatioKey() === '3:2'"
+                (click)="selectRatioKey('3:2')"
+              >
+                3:2
+              </button>
+              <button
+                type="button"
+                class="subtle-button ratio-btn"
+                [class.active]="activeRatioKey() === '16:9'"
+                (click)="selectRatioKey('16:9')"
+              >
+                16:9
+              </button>
+              <button
+                type="button"
+                class="subtle-button ratio-btn"
+                [class.active]="activeRatioKey() === '4:3'"
+                (click)="selectRatioKey('4:3')"
+              >
+                4:3
+              </button>
+              <button
+                type="button"
+                class="subtle-button ratio-btn"
+                [class.active]="activeRatioKey() === '1:1'"
+                (click)="selectRatioKey('1:1')"
+              >
+                1:1
+              </button>
+              @if (selectedRatioKey() !== null || customAspectRatio() !== undefined) {
+                <button
+                  type="button"
+                  class="subtle-button ratio-reset-btn"
+                  (click)="resetAspectRatio()"
+                  title="Reset to default ratio"
+                >
+                  Reset
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        <div class="zoom-control">
+          <label>Zoom:</label>
+          <input 
+            type="range" 
+            [value]="scale()" 
+            min="1" 
+            max="5" 
+            step="0.1" 
+            (input)="onZoomChange($event)" 
+          />
+          <span>{{ scaleText() }}x</span>
+          <button type="button" class="subtle-button" (click)="resetView()" style="margin-left: 10px;">Reset View</button>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="button" (click)="applyCrop()">Use this image</button>
+          <button type="button" class="subtle-button" (click)="onCancel()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <canvas #previewCanvas style="display: none;"></canvas>
+</div>

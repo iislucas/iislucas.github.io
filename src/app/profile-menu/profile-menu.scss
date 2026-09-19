@@ -1,0 +1,132 @@
+@use '../../scss_variables' as *;
+
+.profile-menu-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.avatar-button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 50%;
+  line-height: 0;
+  box-shadow: none;
+
+  &:hover,
+  &:active {
+    background: none;
+  }
+}
+
+.avatar-image,
+.avatar-initial {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-sizing: border-box;
+}
+
+.avatar-initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1em;
+}
+
+.menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+}
+
+.menu-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 11;
+  min-width: 250px;
+  background-color: #fff;
+  border: 1px solid $border-color-light;
+  border-radius: 0.4em;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  padding: 0.4em 0;
+  color: $text-primary;
+}
+
+.user-info {
+  padding: 0.6em 1em;
+
+  .display-name {
+    font-weight: 600;
+    word-break: break-word;
+  }
+
+  .email-chip {
+    font-size: 0.85em;
+    color: $text-secondary;
+    word-break: break-all;
+    margin-top: 0.15em;
+  }
+
+  .admin-chip {
+    display: inline-block;
+    margin-top: 0.5em;
+    font-size: 0.75em;
+    font-weight: 600;
+    padding: 0.15em 0.5em;
+    border-radius: 0.8em;
+    background-color: $highlight-tag-bg;
+    border: 1px solid $highlight-tag-border;
+    color: $highlight-tag-text;
+  }
+
+  .not-admin-note {
+    margin-top: 0.5em;
+    font-size: 0.8em;
+    color: $text-muted;
+    line-height: 1.35;
+  }
+}
+
+.menu-divider {
+  height: 1px;
+  background-color: $menu-sep-color;
+  margin: 0.35em 0;
+}
+
+.menu-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  width: 100%;
+  padding: 0.55em 1em;
+  text-decoration: none;
+  color: $text-primary;
+  font-size: 0.95em;
+  box-sizing: border-box;
+
+  &:hover {
+    background-color: $menu-item-hover-color;
+    color: $text-primary;
+  }
+}
+
+.logout-button {
+  background: none;
+  border: none;
+  border-radius: 0;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: none;
+
+  &:hover {
+    background-color: $menu-item-hover-color;
+  }
+}
