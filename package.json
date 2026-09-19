@@ -21,6 +21,7 @@
     "test:watch": "vitest --no-color",
     "emulator:start": "firebase emulators:start --only auth,firestore",
     "deploy:rules": "firebase deploy --only firestore:rules",
+    "deploy:hosting": "pnpm run build && firebase deploy --only hosting",
     "seed": "node --experimental-strip-types scripts/seed-content.mts",
     "sync:markdown-editor": "node scripts/sync-markdown-editor.mjs",
     "format": "prettier --write \"src/**/*.{ts,html,scss}\""

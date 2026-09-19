@@ -1,7 +1,7 @@
 # Setup
 
-The site is an Angular app deployed to GitHub Pages, with Firebase providing
-authentication and the Firestore database behind it. Nothing here is needed to
+The site is an Angular app deployed to Firebase Hosting, with Firebase
+providing authentication and the Firestore database behind it. Nothing here is needed to
 *read* the site — only to run it locally or to point it at your own project.
 
 Most of this is scripted. The short version, from a clean clone:
@@ -187,64 +187,32 @@ and re-running the seed would overwrite your edits with the files.
 
 ## Deploy
 
-The site is served from **Firebase Hosting** at `iislucas.io`, with
-`iislucas.dev` redirecting to it. `iislucas.github.io` stays alive as a
-redirect too.
+Deploys are manual, from a local checkout. There is no build on push: the
+checkout that has your `environment.local.ts` is the thing that deploys, so
+what ships is what you just built and ran.
+
+```bash
+pnpm run deploy:hosting
+```
+
+That builds the app and publishes it to Firebase Hosting, which serves
+`iislucas.io`, with `iislucas.dev` redirecting to it. Like `deploy:rules`, it
+needs the Firebase CLI logged in once (`pnpm exec firebase login`) and a
+default project set (`pnpm exec firebase use <project>`, which writes the
+gitignored `.firebaserc`).
+
+Content edits never need a deploy — they are Firestore writes, live
+immediately. A deploy is only for code.
 
 Firebase Hosting rather than GitHub Pages for one concrete reason: Firebase
 Authentication checks a sign-in against the browser's address bar, so wherever
-the site is served from has to be an authorized domain. Serving it from a
-domain Firebase already knows about removes a whole class of
-`auth/unauthorized-domain` failure, and Hosting does real SPA rewrites, so
-there is no `404.html` copy to maintain.
+the site is served from has to be an authorized domain. Serving from a domain
+Firebase already knows about removes a whole class of
+`auth/unauthorized-domain` failure. Hosting also does real SPA rewrites (the
+`rewrites` entry in `firebase.json`), so there is no `404.html` copy to
+maintain.
 
-| Workflow | What it does |
-| --- | --- |
-| `deploy-hosting.yml` | Builds the app and deploys it to Firebase Hosting on every push to `main` |
-| `deploy-pages.yml` | Publishes `pages-redirect/index.html` to GitHub Pages, forwarding the old address |
-
-### 1. Repository variables
-
-**Settings → Secrets and variables → Actions → Variables** — add:
-
-| Variable | From |
-| --- | --- |
-| `FIREBASE_API_KEY` | `firebase.apiKey` in `environment.local.ts` |
-| `FIREBASE_AUTH_DOMAIN` | `firebase.authDomain` |
-| `FIREBASE_PROJECT_ID` | `firebase.projectId` |
-| `FIREBASE_STORAGE_BUCKET` | `firebase.storageBucket` |
-| `FIREBASE_MESSAGING_SENDER_ID` | `firebase.messagingSenderId` |
-| `FIREBASE_APP_ID` | `firebase.appId` |
-| `FIREBASE_MEASUREMENT_ID` | optional |
-| `ADMIN_EMAIL` | contact address shown on the login page |
-
-Repository *variables*, not secrets: the build prints them into the bundle
-either way, and variables stay readable in logs, which makes a wrong value
-diagnosable. The build fails with the names of any that are missing.
-
-Moving to Firebase Hosting does not remove this step. Hosting can serve its own
-config at `/__/firebase/init.js`, but the app reads config at build time, and
-`adminEmail` is not part of a Firebase config at all.
-
-### 2. Deploy credential
-
-**Settings → Secrets and variables → Actions → Secrets** — add
-`FIREBASE_SERVICE_ACCOUNT`, the full JSON key of a service account with the
-**Firebase Hosting Admin** role:
-
-```bash
-gcloud iam service-accounts create github-deploy --project=<project>
-gcloud projects add-iam-policy-binding <project> \
-  --member=serviceAccount:github-deploy@<project>.iam.gserviceaccount.com \
-  --role=roles/firebasehosting.admin
-gcloud iam service-accounts keys create key.json \
-  --iam-account=github-deploy@<project>.iam.gserviceaccount.com
-```
-
-Paste the contents of `key.json` as the secret value, then delete the local
-file. This one **is** secret, unlike the variables above.
-
-### 3. Custom domains
+### Custom domains
 
 In the console, Hosting → **Add custom domain**:
 
@@ -256,7 +224,7 @@ Firebase gives you the A / TXT records to set at your registrar, and issues the
 certificates once they resolve. Propagation is usually minutes but can take
 longer.
 
-### 4. Authorize the domains for sign-in
+### Authorize the domains for sign-in
 
 A custom domain that Firebase serves is still not automatically allowed to
 *complete a sign-in*. Run:
@@ -269,14 +237,17 @@ It asserts `iislucas.io`, `iislucas.dev` and `iislucas.github.io` alongside the
 defaults, reads the list back to confirm, and prints the console link for
 anything it could not set.
 
-### 5. GitHub Pages
-
-**Settings → Pages → Build and deployment → Source: GitHub Actions.**
+### The old GitHub Pages address
 
 `iislucas.github.io` cannot be pointed at Firebase Hosting with a custom domain,
-because GitHub controls DNS for `github.io`. Keeping the old address working
-therefore means serving a redirect from Pages, which is all `deploy-pages.yml`
-does now — no build, no config, no secrets.
+because GitHub controls DNS for `github.io`. So it serves a redirect instead:
+`pages-redirect/index.html`, which carries the path across so a deep link lands
+where it meant to.
+
+Publishing it is a one-off. Set **Settings → Pages → Build and deployment →
+Source: GitHub Actions**, then run the **Publish the GitHub Pages redirect**
+workflow from the Actions tab. It has no `push` trigger — re-run it by hand on
+the rare occasion the redirect changes.
 
 ## Troubleshooting
 
@@ -309,6 +280,6 @@ hostname only, and seeds `localhost` but not `127.0.0.1`.
 is what sends every unmatched path to `index.html`; check it survived, and that
 the deploy ran against the site you are looking at.
 
-**A push to `main` did not update the site** — the two workflows have separate
-triggers. `deploy-hosting.yml` runs on every push; `deploy-pages.yml` only runs
-when the redirect itself changes, because nothing else affects it.
+**A push to `main` did not update the site** — nothing deploys on push by
+design. Run `pnpm run deploy:hosting` from a checkout with a real
+`environment.local.ts`.

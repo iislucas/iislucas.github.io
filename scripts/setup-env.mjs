@@ -5,8 +5,8 @@
  * build without hand-copying files. Run automatically by `pnpm start` and
  * `pnpm build` (see the `prestart` / `prebuild` scripts).
  *
- * In CI, the workflow writes environment.local.ts from repository variables
- * before the build, so this is a no-op there.
+ * A placeholder config builds, but does not work against a real project, so
+ * `firebase:setup` fills it in and deploys run from a checkout that has it.
  */
 
 import { copyFileSync, existsSync } from 'node:fs';

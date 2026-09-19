@@ -1,20 +1,21 @@
-# Publishes a redirect to GitHub Pages. The site itself is built and deployed
-# by deploy-hosting.yml to Firebase Hosting, at iislucas.io.
+# Publishes a redirect to GitHub Pages, by hand.
+#
+# The site itself is built and deployed from a local checkout with
+# `pnpm run deploy:hosting`; nothing here deploys the app. All this workflow
+# does is put `pages-redirect/index.html` on iislucas.github.io so the old
+# address forwards to iislucas.io.
 #
 # iislucas.github.io cannot be pointed at Firebase Hosting with a custom domain,
 # because GitHub controls DNS for github.io, so keeping the old address working
 # means serving something from Pages that forwards. That something needs no
-# build, no Firebase config and no secrets, which is why this workflow is a
-# copy step rather than the build it used to be.
-name: Redirect GitHub Pages to the live site
+# build, no Firebase config and no secrets.
+#
+# Run it from the Actions tab when the redirect changes, which is close to
+# never. It is deliberately not on `push`: deployments happen when you ask for
+# them, not when a commit lands.
+name: Publish the GitHub Pages redirect
 
 on:
-  push:
-    branches: [main]
-    # Nothing else affects the redirect, so nothing else needs to republish it.
-    paths:
-      - 'pages-redirect/**'
-      - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
 permissions:

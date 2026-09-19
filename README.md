@@ -68,10 +68,15 @@ reports on both rather than pretending otherwise. See [SETUP.md](SETUP.md).
 
 ## Deployment
 
-Pushing to `main` builds and deploys to Firebase Hosting
-(`.github/workflows/deploy-hosting.yml`), which serves `iislucas.io`, with
+Deploys are manual, from a local checkout — nothing builds on push:
+
+```bash
+pnpm run deploy:hosting
+```
+
+That publishes to Firebase Hosting, which serves `iislucas.io`, with
 `iislucas.dev` redirecting to it. The old `iislucas.github.io` address serves a
-redirect published by `.github/workflows/deploy-pages.yml`.
+static redirect, published by hand from the Actions tab.
 
 Serving from a domain Firebase already trusts is deliberate: sign-in is checked
 against the browser's address bar, so the serving origin has to be an
