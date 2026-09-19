@@ -65,7 +65,7 @@ would have you click through:
 | Firestore | Creates the database (default location `nam5`) |
 | Web app | Registers one, or reuses the existing one |
 | Config | Writes `src/environments/environment.local.ts` from its SDK config |
-| Auth | Turns on Email/Password sign-in |
+| Auth | Turns on Email/Password sign-in; reports on Google sign-in |
 | Domains | Authorizes `iislucas.github.io` for sign-in |
 
 It authenticates with the credentials from `gcloud auth login` — no service
@@ -83,14 +83,44 @@ Every step is idempotent — re-running reports what already existed.
 The project is taken from `--project`, else `.firebaserc`, else whatever
 `gcloud config get-value project` returns.
 
-**Two things it deliberately does not do**, because both need the console:
+#### Google sign-in — the one manual step
 
-- **Google sign-in**, which requires an OAuth consent screen and client:
-  Build → Authentication → Sign-in method → Google. Email/password works
-  without it.
-- **Cloud Storage**, needed only to paste images into the markdown editor:
-  Build → Storage → Get started. Then put your address in `storage.rules`
-  (`ADMIN_EMAIL`) and run `pnpm exec firebase deploy --only storage`.
+**Turn it on in the console, once:**
+Build → Authentication → Sign-in method → **Google** → enable → save.
+
+That single toggle also creates the OAuth client behind it, which is the part
+that cannot be scripted. The client has to carry
+`https://<project>.firebaseapp.com/__/auth/handler` as an authorized redirect
+URI, and nothing outside the console can set one — not gcloud, and not the IAP
+OAuth client API, which creates clients but will not let you set redirect URIs.
+
+`firebase:setup` deliberately does not try to enable it for you. The API would
+accept a provider with no client behind it, and the result reads as configured
+in the console while failing in the browser — a worse place to end up than an
+honest manual step. What the script does instead is *report*, so you always
+know which of three states you are in:
+
+| What it prints | Meaning |
+| --- | --- |
+| `Google sign-in is on and has an OAuth client` | Nothing to do |
+| `Google sign-in is off — this is the one step to do by hand` | Click the toggle |
+| `on but has no OAuth client, so it will fail in the browser` | Broken; re-save it in the console |
+
+If you already have a suitable OAuth client, it can be applied without the
+console:
+
+```bash
+pnpm run firebase:setup -- --google-client-id=... --google-client-secret=...
+```
+
+**Email/password sign-in works regardless**, so this never blocks setup — the
+site is fully usable before you get to it.
+
+#### Cloud Storage
+
+Needed only to paste images into the markdown editor, and it has no create API:
+Build → Storage → Get started. Then put your address in `storage.rules`
+(`ADMIN_EMAIL`) and run `pnpm exec firebase deploy --only storage`.
 
 ### 2. `pnpm run deploy:rules`
 

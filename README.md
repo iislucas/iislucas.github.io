@@ -62,7 +62,9 @@ pnpm run sync:markdown-editor   # refresh the vendored editor from upstream
 `firebase:setup` and the `admin:*` commands drive the Firebase and Firestore
 REST APIs with the credentials from `gcloud auth login`, so setting up a
 project and granting access are both scripted rather than done by clicking
-through the console.
+through the console. Two things stay manual because they have no API —
+enabling Google sign-in and creating a Storage bucket — and `firebase:setup`
+reports on both rather than pretending otherwise. See [SETUP.md](SETUP.md).
 
 ## Deployment
 

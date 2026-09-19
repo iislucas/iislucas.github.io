@@ -62,12 +62,23 @@ const REQUIRED_APIS = [
 const EXTRA_AUTHORIZED_DOMAINS = ['iislucas.github.io'];
 
 function parseArgs(argv) {
-  const args = { dryRun: false, forceEnv: false, project: null, location: 'nam5' };
+  const args = {
+    dryRun: false,
+    forceEnv: false,
+    project: null,
+    location: 'nam5',
+    googleClientId: null,
+    googleClientSecret: null,
+  };
   for (const arg of argv) {
     if (arg === '--dry-run') args.dryRun = true;
     else if (arg === '--force-env') args.forceEnv = true;
     else if (arg.startsWith('--project=')) args.project = arg.slice('--project='.length);
     else if (arg.startsWith('--location=')) args.location = arg.slice('--location='.length);
+    else if (arg.startsWith('--google-client-id='))
+      args.googleClientId = arg.slice('--google-client-id='.length);
+    else if (arg.startsWith('--google-client-secret='))
+      args.googleClientSecret = arg.slice('--google-client-secret='.length);
     else if (arg === '--help' || arg === '-h') args.help = true;
     else fail(`Unknown argument: ${arg}`, 'Run with --help to see the options.');
   }
@@ -86,11 +97,51 @@ ${bold('pnpm run firebase:setup')} — prepare a Google Cloud project to back th
   --dry-run          Report what would be done, change nothing.
   --force-env        Overwrite src/environments/environment.local.ts if it
                      already exists. Without this, an existing file is kept.
+
+  --google-client-id=<id>
+  --google-client-secret=<secret>
+                     Enable Google sign-in with an OAuth client you already
+                     have. Without them, Google sign-in is left alone and
+                     reported on — creating the client needs the console.
+
   --help             This message.
 `);
 }
 
 /* ---------------------------------------------------------------- steps -- */
+
+/**
+ * Resolves the Identity Toolkit admin base path.
+ *
+ * Google documents these endpoints under `/admin/v2/`, while the published
+ * discovery document lists them under `/v2/`. Rather than bet on one, probe
+ * both once and remember which answers; a wrong guess would otherwise make
+ * every auth step fail with a confusing 404.
+ */
+let identityBase = null;
+async function identityToolkitBase(projectId, token) {
+  if (identityBase) return identityBase;
+  for (const candidate of ['admin/v2', 'v2']) {
+    const probe = await api(
+      `https://identitytoolkit.googleapis.com/${candidate}/projects/${projectId}/config`,
+      { token },
+    );
+    // Anything other than "no such path" means this prefix is the live one:
+    // 403 and 404-on-the-resource still tell us the route exists.
+    if (probe.ok || probe.status === 403 || probe.status === 400) {
+      identityBase = candidate;
+      return identityBase;
+    }
+    if (probe.status === 404 && probe.data?.error?.message?.includes('Firebase Auth')) {
+      identityBase = candidate;
+      return identityBase;
+    }
+  }
+  // Nothing answered; fall back to the documented one so the caller's own
+  // error handling reports something recognisable.
+  identityBase = 'admin/v2';
+  return identityBase;
+}
 
 async function enableApis(projectId, dryRun) {
   step('Enabling the required APIs');
@@ -281,7 +332,8 @@ export const environment: AppEnvironment = {
 async function enableEmailSignIn(projectId, token, dryRun) {
   step('Enabling Email/Password sign-in');
 
-  const configUrl = `https://identitytoolkit.googleapis.com/admin/v2/projects/${projectId}/config`;
+  const base = await identityToolkitBase(projectId, token);
+  const configUrl = `https://identitytoolkit.googleapis.com/${base}/projects/${projectId}/config`;
   let current = await api(configUrl, { token });
 
   // Firebase Auth is not provisioned until something initializes it.
@@ -304,6 +356,14 @@ async function enableEmailSignIn(projectId, token, dryRun) {
   }
 
   if (!current.ok) {
+    // A dry run is for finding out what would happen; aborting it on a read
+    // failure hides every step after this one, which is the opposite of useful.
+    if (dryRun) {
+      warn(
+        `Could not read the auth config (${describeApiError(current)}) — continuing the dry run`,
+      );
+      return;
+    }
     fail(`Could not read the auth config: ${describeApiError(current)}`);
   }
 
@@ -330,7 +390,8 @@ async function enableEmailSignIn(projectId, token, dryRun) {
 async function authorizeDomains(projectId, token, dryRun) {
   step('Authorizing the sign-in domains');
 
-  const configUrl = `https://identitytoolkit.googleapis.com/admin/v2/projects/${projectId}/config`;
+  const base = await identityToolkitBase(projectId, token);
+  const configUrl = `https://identitytoolkit.googleapis.com/${base}/projects/${projectId}/config`;
   const current = await api(configUrl, { token });
   if (!current.ok) {
     warn(`Skipped: could not read the auth config (${describeApiError(current)})`);
@@ -357,6 +418,93 @@ async function authorizeDomains(projectId, token, dryRun) {
     fail(`Could not authorize ${toAdd.join(', ')}: ${describeApiError(updated)}`);
   }
   ok(`authorized ${toAdd.join(', ')}`);
+}
+
+/**
+ * Reports on Google sign-in, and configures it only when given an OAuth client
+ * to configure it with.
+ *
+ * Enabling the provider is an ordinary API call, but creating the OAuth client
+ * it needs is not: the client must carry
+ * `https://<project>.firebaseapp.com/__/auth/handler` as an authorized
+ * redirect URI, and nothing outside the console can set one — not gcloud, not
+ * the IAP OAuth client API. Asking the API to enable the provider without a
+ * client produces something that reads as configured and then fails in a
+ * user's browser, so this does not try: clicking the toggle once in the
+ * console creates the client properly, and that is the recommended path.
+ *
+ * What it does do is read the current state and say which of three situations
+ * you are in, including the broken middle one that is otherwise invisible.
+ */
+async function configureGoogleSignIn(projectId, token, { dryRun, clientId, clientSecret }) {
+  step('Checking Google sign-in');
+
+  const base = await identityToolkitBase(projectId, token);
+  const configsUrl = `https://identitytoolkit.googleapis.com/${base}/projects/${projectId}/defaultSupportedIdpConfigs`;
+  const googleUrl = `${configsUrl}/google.com`;
+
+  const existing = await api(googleUrl, { token });
+
+  if (existing.ok && existing.data?.enabled && existing.data?.clientId) {
+    ok('Google sign-in is on and has an OAuth client');
+    return;
+  }
+
+  // An explicit client is deterministic, so this path does configure.
+  if (clientId && clientSecret) {
+    if (dryRun) {
+      skip('would enable Google sign-in with the client id given');
+      return;
+    }
+    const body = { enabled: true, clientId, clientSecret };
+    let result = await api(`${configsUrl}?idpId=google.com`, { method: 'POST', body, token });
+    if (result.status === 409 || existing.ok) {
+      result = await api(`${googleUrl}?updateMask=enabled,clientId,clientSecret`, {
+        method: 'PATCH',
+        body,
+        token,
+      });
+    }
+    if (!result.ok) {
+      warn(`Could not enable Google sign-in: ${describeApiError(result)}`);
+      printGoogleSignInInstructions(projectId);
+      return;
+    }
+    const verify = await api(googleUrl, { token });
+    if (verify.ok && verify.data?.enabled && verify.data?.clientId) {
+      ok(`Google sign-in enabled (client ${verify.data.clientId.slice(0, 24)}…)`);
+    } else {
+      warn('Google sign-in did not come back configured.');
+      printGoogleSignInInstructions(projectId);
+    }
+    return;
+  }
+
+  if (clientId || clientSecret) {
+    warn('Both --google-client-id and --google-client-secret are needed; skipping.');
+    printGoogleSignInInstructions(projectId);
+    return;
+  }
+
+  // The state worth shouting about: on, but with no client behind it.
+  if (existing.ok && existing.data?.enabled) {
+    warn('Google sign-in is on but has no OAuth client, so it will fail in the browser.');
+    printGoogleSignInInstructions(projectId);
+    return;
+  }
+
+  skip('Google sign-in is off — this is the one step to do by hand');
+  printGoogleSignInInstructions(projectId);
+}
+
+function printGoogleSignInInstructions(projectId) {
+  console.log(
+    `\n    Turn it on here — one toggle, and Firebase creates the OAuth client for you:\n` +
+      `      https://console.firebase.google.com/project/${projectId}/authentication/providers\n` +
+      `\n    ${dim('Only the console can create a client with the right redirect URI.')}\n` +
+      `    ${dim('Already have one? pnpm run firebase:setup -- --google-client-id=... --google-client-secret=...')}\n` +
+      `    ${dim('Email/password sign-in works regardless, so this never blocks setup.')}\n`,
+  );
 }
 
 /* ----------------------------------------------------------------- main -- */
@@ -390,6 +538,11 @@ async function main() {
     });
   }
   await enableEmailSignIn(projectId, token, args.dryRun);
+  await configureGoogleSignIn(projectId, token, {
+    dryRun: args.dryRun,
+    clientId: args.googleClientId,
+    clientSecret: args.googleClientSecret,
+  });
   await authorizeDomains(projectId, token, args.dryRun);
 
   console.log(`\n${bold('Done.')} Next:\n`);
@@ -399,10 +552,8 @@ async function main() {
   console.log('  pnpm start\n');
   console.log(
     dim(
-      'Not scripted, because it needs an OAuth consent screen only the console can create:\n' +
-        `  Google sign-in — https://console.firebase.google.com/project/${projectId}/authentication/providers\n` +
-        '  Email/password sign-in works without it.\n' +
-        `  Image uploads also need Storage — https://console.firebase.google.com/project/${projectId}/storage`,
+      'Still manual: image uploads need Cloud Storage, which has no create API —\n' +
+        `  https://console.firebase.google.com/project/${projectId}/storage`,
     ),
   );
 }
