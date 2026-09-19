@@ -7,13 +7,21 @@
  * keeping — Google sign-in, email and password, and a password reset that is
  * offered precisely when the error code says a reset would help.
  *
- * Signing in is not the same as being able to edit: authorization comes from
- * the `acl/{email}` document, checked by FirebaseStateService and enforced by
- * firestore.rules. Someone who signs in without one lands back on the site as
- * an ordinary visitor, and is told so.
+ * Signing in is only for the site's editor. Nothing links here — the page is
+ * reached by typing /login — no account can be created from it, and an
+ * account without an `acl/{email}` admin document is signed straight back out
+ * by FirebaseStateService (firestore.rules enforce the same thing on writes).
  */
 
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FirebaseStateService, LoginStatus } from '../firebase-state.service';
 import { RoutingService } from '../routing.service';
@@ -44,10 +52,24 @@ export class LoginComponent {
   protected errorCode = signal<string | undefined>(undefined);
   protected resetSentTo = signal<string | null>(null);
   protected busy = signal(false);
+  // Set once a sign-in succeeds, so that the page leaves only after the admin
+  // check has settled — not on an account that is about to be signed out.
+  private signedInHere = signal(false);
 
   protected isSignedIn = computed(() => this.firebaseState.loginStatus() === LoginStatus.SignedIn);
-  protected isAdmin = this.firebaseState.isAdmin;
   protected user = this.firebaseState.user;
+
+  // A sign-in refused after the fact (an account with no admin access) is
+  // reported by the service rather than by the sign-in call.
+  protected shownError = computed(() => this.errorMessage() ?? this.firebaseState.loginError());
+
+  constructor() {
+    effect(() => {
+      if (this.signedInHere() && this.firebaseState.isAdmin()) {
+        untracked(() => this.returnToCaller());
+      }
+    });
+  }
 
   /** Shown only when the failure is one a reset link can actually fix. */
   protected canReset = computed(() => isPasswordResettable(this.errorCode()));
@@ -63,7 +85,7 @@ export class LoginComponent {
       this.errorMessage.set(googleSignInErrorMessage(result.errorCode));
       return;
     }
-    this.returnToCaller();
+    this.signedInHere.set(true);
   }
 
   protected async signInWithEmail() {
@@ -80,7 +102,7 @@ export class LoginComponent {
       this.errorMessage.set(signInErrorMessage(result.errorCode));
       return;
     }
-    this.returnToCaller();
+    this.signedInHere.set(true);
   }
 
   protected async sendPasswordReset() {
@@ -103,6 +125,7 @@ export class LoginComponent {
 
   private startAttempt() {
     this.busy.set(true);
+    this.firebaseState.loginError.set(null);
     this.errorMessage.set(null);
     this.errorCode.set(undefined);
     this.resetSentTo.set(null);

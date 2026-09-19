@@ -13,9 +13,13 @@ rather than through a commit.
 | `/` | Landing page — the profile document, rendered from markdown |
 | `/concepts` | The Concept Gallery, filterable by text and tag |
 | `/concepts/:slug` | One concept |
-| `/concepts/new`, `/concepts/:slug/edit` | Editing, admin only |
-| `/profile/edit` | Editing the landing page, admin only |
-| `/login` | Sign in — only needed in order to edit |
+| `/login` | Sign in — for the site's editor only; nothing links to it |
+
+There are no edit pages. Signed in as an admin, the header's **Edit** button
+turns on *edit mode*: every field on the page can then be tapped and changed in
+place (accept ✓, cancel ✕, undo ↶), list entries such as papers and links can
+be selected to move, delete or add above / below, and the gallery gets a
+"New concept" button. See `src/app/edit-mode/`.
 
 ## How it works
 
@@ -32,6 +36,9 @@ rather than through a commit.
   courtesy. The rules forbid writing to `acl` from the client entirely, so the
   web app cannot grant admin to anyone — those commands go through the REST API
   with your own Google credentials.
+- **Nobody else can sign in.** New accounts are switched off at the project
+  (`pnpm run auth:lock-signups`), the header has no sign-in link, and an
+  account without admin access is signed straight back out.
 - **Drafts are enforced, not hidden.** A concept with `published: false` is
   unreadable to anyone but an admin, at the rules level — the client cannot
   fetch it to hide it.
@@ -47,6 +54,7 @@ rather than through a commit.
 ```bash
 pnpm run firebase:setup         # prepare a Google Cloud project to back the site
 pnpm run admin:add <email>      # grant someone edit access (admin:remove, admin:list)
+pnpm run auth:lock-signups      # stop new accounts being created (-- --unlock, -- --status)
 pnpm run deploy                 # build, then deploy firestore.rules and Firebase Hosting
 pnpm run deploy:rules           # deploy firestore.rules only
 pnpm run deploy:hosting         # build, then deploy Firebase Hosting only

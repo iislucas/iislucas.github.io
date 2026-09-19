@@ -31,7 +31,10 @@ export interface Concept {
   // Free-form tags, used for filtering the gallery.
   tags: string[];
   // Optional hero image, shown on the card and at the top of the concept page.
+  // This is the cropped version; `imageOriginalUrl` is the uncropped upload it
+  // was cut from, kept so that the crop can be redone later.
   imageUrl: string;
+  imageOriginalUrl: string;
   // Sort key for the gallery: lower sorts first, ties broken by title. Kept as
   // an explicit number so the order can be curated rather than chronological.
   order: number;
@@ -52,6 +55,7 @@ export function initConcept(slug = ''): Concept {
     acknowledgement: '',
     tags: [],
     imageUrl: '',
+    imageOriginalUrl: '',
     order: 0,
     published: false,
     created: '',
@@ -96,6 +100,10 @@ export function firestoreDocToConcept(
       typeof data['acknowledgement'] === 'string' ? data['acknowledgement'] : base.acknowledgement,
     tags: Array.isArray(data['tags']) ? data['tags'].filter((t) => typeof t === 'string') : [],
     imageUrl: typeof data['imageUrl'] === 'string' ? data['imageUrl'] : base.imageUrl,
+    imageOriginalUrl:
+      typeof data['imageOriginalUrl'] === 'string'
+        ? data['imageOriginalUrl']
+        : base.imageOriginalUrl,
     order: typeof data['order'] === 'number' ? data['order'] : base.order,
     published: data['published'] === true,
     created: typeof data['created'] === 'string' ? data['created'] : base.created,
@@ -110,6 +118,18 @@ export function firestoreDocToConcept(
 export function conceptToFirestoreDoc(concept: Concept): DocumentData {
   const { slug: _slug, ...rest } = concept;
   return rest;
+}
+
+/**
+ * Reads tags typed as one comma-separated line, e.g. `emotions, mathematics`.
+ * Trims each one and drops empties and repeats, keeping the order written.
+ */
+export function parseTags(text: string): string[] {
+  const tags = text
+    .split(',')
+    .map((t) => t.trim())
+    .filter((t) => t !== '');
+  return [...new Set(tags)];
 }
 
 /** Gallery order: curated `order` first, then title, so it is stable. */

@@ -11,46 +11,186 @@
       <h2>No such concept</h2>
       <p>
         There is no concept at <code>/concepts/{{ slug() }}</code
-        >. It may have been renamed, or it may still be a draft — drafts are only visible when
-        signed in as an admin.
+        >. It may have been renamed, or it may still be a draft — drafts are only visible to the
+        site's editor.
       </p>
       <a class="button" [href]="galleryHref()">Back to the gallery</a>
     </div>
   } @else if (concept(); as concept) {
     <article class="concept">
       <header class="concept-header">
-        <div class="title-row">
-          <h1>{{ concept.title }}</h1>
-          @if (isAdmin()) {
-            <a class="outlined-button edit-button" [href]="editHref()">
-              <app-icon name="edit" width="1em" height="1em"></app-icon>
-              Edit
-            </a>
-          }
-        </div>
-        @if (!concept.published) {
-          <span class="status-badge status-draft">Draft — only you can see this</span>
-        }
-        @if (concept.summary) {
-          <p class="summary">{{ concept.summary }}</p>
-        }
-        @if (concept.tags.length > 0) {
-          <div class="tag-row">
-            @for (tag of concept.tags; track tag) {
-              <a class="tag-chip" [href]="tagHref(tag)">{{ tag }}</a>
+        <h1>
+          <app-editable-field
+            fieldId="concept.title"
+            label="Title"
+            [value]="concept.title"
+            [commit]="commitText('title')"
+            >{{ concept.title }}</app-editable-field
+          >
+        </h1>
+
+        @if (!concept.published || editing()) {
+          <div class="status-row">
+            @if (concept.published) {
+              <span class="status-badge status-listed">Published</span>
+            } @else {
+              <span class="status-badge status-draft">Draft — only you can see this</span>
             }
+            @if (editing()) {
+              <button
+                type="button"
+                class="subtle-button"
+                [disabled]="busy()"
+                (click)="togglePublished(concept)"
+              >
+                <app-icon
+                  [name]="concept.published ? 'visibility_off' : 'visibility'"
+                  width="1em"
+                  height="1em"
+                ></app-icon>
+                {{ concept.published ? 'Unpublish' : 'Publish' }}
+              </button>
+            }
+          </div>
+        }
+
+        @if (concept.summary || editing()) {
+          <p class="summary">
+            <app-editable-field
+              fieldId="concept.summary"
+              label="Summary"
+              placeholder="One or two lines, shown on the gallery card."
+              [kind]="EditKind.MultilineText"
+              [rows]="2"
+              [value]="concept.summary"
+              [commit]="commitText('summary')"
+              >{{ concept.summary }}</app-editable-field
+            >
+          </p>
+        }
+
+        @if (editing()) {
+          <div class="tag-row">
+            <app-editable-field
+              fieldId="concept.tags"
+              label="Tags"
+              emptyText="Add tags"
+              placeholder="Comma separated: emotions, mathematics"
+              [value]="concept.tags.join(', ')"
+              [commit]="commitTags"
+            >
+              <span class="tag-chips">
+                @for (tag of concept.tags; track tag) {
+                  <span class="tag-chip">{{ tag }}</span>
+                }
+              </span>
+            </app-editable-field>
+          </div>
+        } @else if (concept.tags.length > 0) {
+          <div class="tag-row">
+            <span class="tag-chips">
+              @for (tag of concept.tags; track tag) {
+                <a class="tag-chip" [href]="tagHref(tag)">{{ tag }}</a>
+              }
+            </span>
           </div>
         }
       </header>
 
-      @if (concept.imageUrl) {
-        <img class="hero-image" [src]="concept.imageUrl" alt="" />
+      @if (concept.imageUrl || editing()) {
+        <div class="hero-slot">
+          <app-editable-image
+            fieldId="concept.image"
+            label="Image"
+            [imageUrl]="concept.imageUrl"
+            [originalUrl]="concept.imageOriginalUrl"
+            [storageFolder]="imageFolder()"
+            [aspectRatio]="3 / 2"
+            [cropSize]="{ width: 1200, height: 800 }"
+            [commit]="saveImage"
+          >
+            @if (concept.imageUrl) {
+              <img class="hero-image" [src]="concept.imageUrl" alt="" />
+            }
+          </app-editable-image>
+        </div>
       }
 
-      <app-markdown-viewer [markdown]="concept.markdown"></app-markdown-viewer>
+      <app-editable-field
+        fieldId="concept.markdown"
+        label="Body"
+        emptyText="Write the concept"
+        [kind]="EditKind.Markdown"
+        [value]="concept.markdown"
+        [commit]="commitText('markdown')"
+        [imageUploader]="markdownUploader"
+      >
+        <app-markdown-viewer [markdown]="concept.markdown"></app-markdown-viewer>
+      </app-editable-field>
 
-      @if (concept.acknowledgement) {
-        <aside class="acknowledgement">{{ concept.acknowledgement }}</aside>
+      @if (concept.acknowledgement || editing()) {
+        <aside class="acknowledgement">
+          <app-editable-field
+            fieldId="concept.acknowledgement"
+            label="Acknowledgement"
+            placeholder="Thanks to conversations with …"
+            [kind]="EditKind.MultilineText"
+            [value]="concept.acknowledgement"
+            [commit]="commitText('acknowledgement')"
+            >{{ concept.acknowledgement }}</app-editable-field
+          >
+        </aside>
+      }
+
+      @if (editing()) {
+        <section class="concept-settings">
+          <div class="setting-row">
+            <span class="setting-label">Gallery order</span>
+            <app-editable-field
+              fieldId="concept.order"
+              label="Gallery order"
+              placeholder="Lower sorts first"
+              [value]="'' + concept.order"
+              [commit]="commitOrder"
+            >
+              <code>{{ concept.order }}</code>
+              <span class="setting-hint">— lower sorts first; ties go by title</span>
+            </app-editable-field>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Address</span>
+            <span class="setting-value">
+              <code>/concepts/{{ concept.slug }}</code>
+              <span class="setting-hint">— fixed, so links to it keep working</span>
+            </span>
+          </div>
+
+          <div class="delete-row">
+            @if (busy()) {
+              <span class="setting-hint">Working…</span>
+            } @else if (confirmingDelete()) {
+              <span class="confirm-text">Delete "{{ concept.title }}" permanently?</span>
+              <button type="button" class="delete-button" (click)="deleteConcept()">
+                Yes, delete
+              </button>
+              <button type="button" class="subtle-button" (click)="confirmingDelete.set(false)">
+                Keep it
+              </button>
+            } @else {
+              <button type="button" class="delete-button" (click)="confirmingDelete.set(true)">
+                <app-icon name="delete" width="1em" height="1em"></app-icon>
+                Delete this concept
+              </button>
+            }
+          </div>
+        </section>
+      }
+
+      @if (actionError(); as message) {
+        <div class="inline-error">
+          <app-icon name="warning" width="1.1em" height="1.1em"></app-icon>
+          <span>{{ message }}</span>
+        </div>
       }
     </article>
   }

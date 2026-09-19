@@ -85,13 +85,6 @@
     border: 1px solid $highlight-tag-border;
     color: $highlight-tag-text;
   }
-
-  .not-admin-note {
-    margin-top: 0.5em;
-    font-size: 0.8em;
-    color: $text-muted;
-    line-height: 1.35;
-  }
 }
 
 .menu-divider {
@@ -117,7 +110,8 @@
   }
 }
 
-.logout-button {
+// A <button> dressed as a .menu-link.
+.menu-button {
   background: none;
   border: none;
   border-radius: 0;

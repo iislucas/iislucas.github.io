@@ -78,11 +78,50 @@
   text-decoration: none;
 }
 
-.edit-button {
+.profile-photo-slot {
   flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35em;
+  width: 96px;
+}
+
+// In edit mode each link is an entry of its own, with its URL under the chip.
+.profile-links.editing {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.6em;
+}
+
+.link-url {
+  display: block;
+  margin-top: 0.2em;
+  font-size: 0.85em;
+  color: $text-muted;
+  overflow-wrap: anywhere;
+}
+
+// A labelled value shown only in edit mode — ids and URLs that the page
+// otherwise shows only as the links built from them.
+.edit-only-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.2em 0.6em;
+  margin: 0.35em 0;
+  font-size: 0.9em;
+
+  app-editable-field {
+    flex: 1 1 12em;
+    min-width: 0;
+  }
+}
+
+.edit-only-label {
+  flex: 0 0 8.5em;
+  color: $text-muted;
+  font-size: 0.9em;
+}
+
+.paper-id-fields {
+  margin-top: 0.5em;
 }
 
 .favourite-papers {
@@ -138,6 +177,13 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.5em;
+}
+
+// An open title editor takes the whole line, so that it is as wide as the
+// title it edits.
+.paper-title > app-editable-field.open {
+  flex: 1 1 100%;
+  min-width: 0;
 }
 
 .paper-year {
@@ -200,13 +246,34 @@
   margin-top: 1.25em;
 }
 
-@media (max-width: 560px) {
+@media (max-width: 600px) {
+  .home-page {
+    padding-top: 1.1em;
+  }
+
   .profile-header {
-    flex-wrap: wrap;
+    gap: 0.9em;
+  }
+
+  .profile-photo-slot {
+    width: 72px;
   }
 
   .profile-photo {
     width: 72px;
     height: 72px;
+  }
+
+  .profile-heading h1 {
+    font-size: 1.6em;
+  }
+
+  // One column of cards, full width.
+  .concept-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .edit-only-label {
+    flex-basis: 100%;
   }
 }

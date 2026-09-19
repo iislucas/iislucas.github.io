@@ -9,8 +9,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FirebaseStateService } from '../firebase-state.service';
 import { IconComponent } from '../icons/icon.component';
-import { RoutingService } from '../routing.service';
-import { AppPathPatterns, Views } from '../app.config';
+import { EditModeService } from '../edit-mode/edit-mode.service';
 
 @Component({
   selector: 'app-profile-menu',
@@ -22,15 +21,11 @@ import { AppPathPatterns, Views } from '../app.config';
 })
 export class ProfileMenuComponent {
   public firebaseState = inject(FirebaseStateService);
-  protected routingService: RoutingService<AppPathPatterns> = inject(RoutingService);
+  protected editMode = inject(EditModeService);
 
-  protected Views = Views;
   protected user = this.firebaseState.user;
   protected isAdmin = this.firebaseState.isAdmin;
   protected menuOpen = signal(false);
-
-  protected profileEditHref = computed(() => this.routingService.hrefForView(Views.ProfileEdit));
-  protected newConceptHref = computed(() => this.routingService.hrefForView(Views.ConceptNew));
 
   protected userInitial = computed(() => {
     const user = this.user();
@@ -57,6 +52,11 @@ export class ProfileMenuComponent {
     }
     return color;
   });
+
+  protected toggleEditMode() {
+    this.menuOpen.set(false);
+    this.editMode.toggle();
+  }
 
   protected toggleMenu() {
     this.menuOpen.set(!this.menuOpen());

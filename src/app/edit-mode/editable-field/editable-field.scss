@@ -1,0 +1,57 @@
+@use '../../../scss_variables' as *;
+
+// Outside edit mode the field adds no box of its own: the projected content
+// lays out exactly as it would without the wrapper. In edit mode it is a box,
+// so that a page can size and place it.
+:host {
+  display: contents;
+}
+
+:host(.editing) {
+  display: block;
+}
+
+:host(.editing.inline) {
+  display: inline-block;
+}
+
+.editable-display {
+  display: contents;
+
+  &.enabled {
+    display: block;
+    @include editable-hover;
+  }
+
+  &.hidden {
+    display: none;
+  }
+}
+
+// A field set inside a line of text, e.g. the year beside a paper's title.
+:host(.inline) .editable-editor {
+  min-width: 8em;
+}
+
+.empty-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-size: 0.9rem;
+  font-weight: normal;
+  font-style: italic;
+  color: $text-muted;
+}
+
+.editable-editor {
+  display: block;
+  @include editable-selected;
+  padding: 0.35em;
+  box-sizing: border-box;
+}
+
+.inline-error {
+  margin-top: 0.4em;
+  font-size: 0.9rem;
+  font-weight: normal;
+}

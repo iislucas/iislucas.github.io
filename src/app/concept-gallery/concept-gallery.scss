@@ -22,10 +22,10 @@
   }
 }
 
-.new-concept-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35em;
+.new-concept-form {
+  margin-top: 0.9em;
+  padding: 0.5em;
+  @include editable-selected;
 }
 
 .gallery-intro {

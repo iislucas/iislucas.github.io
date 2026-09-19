@@ -128,3 +128,39 @@ $primary-color: #1b4965;
   background-color: $row-highlight-bg;
   border-left-color: $row-highlight-border;
 }
+
+// ============================================================================
+//  Edit Mode
+//  In-place editing (see src/app/edit-mode/). Editable content gets a faint
+//  dashed outline on hover, and a solid accent outline with a light tint when
+//  it is selected or open. Kept subtle: the page should still read as itself.
+// ============================================================================
+$edit-hover-outline: #a1a1aa;
+$edit-selected-outline: #1b4965;
+$edit-selected-bg: #f0f7ff;
+$edit-banner-bg: #fff8e1;
+$edit-banner-border: #f0c36d;
+
+// Hover affordance for anything tappable in edit mode.
+@mixin editable-hover {
+  outline: 1px dashed transparent;
+  outline-offset: 3px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition:
+    outline-color 0.15s ease,
+    background-color 0.15s ease;
+
+  &:hover,
+  &:focus-visible {
+    outline-color: $edit-hover-outline;
+  }
+}
+
+// The selected / open state.
+@mixin editable-selected {
+  outline: 2px solid $edit-selected-outline;
+  outline-offset: 3px;
+  border-radius: 4px;
+  background-color: $edit-selected-bg;
+}

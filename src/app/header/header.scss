@@ -70,47 +70,55 @@
   margin-left: auto;
 }
 
-.nav-new-concept {
+.nav-edit-toggle {
   display: inline-flex;
   align-items: center;
   gap: 0.35em;
   color: $header-text-color;
-  text-decoration: none;
+  background-color: transparent;
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 0.3em;
   padding: 0.3em 0.6em;
   font-size: 0.9em;
+  opacity: 1;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
 
   &:hover {
     color: $header-text-color;
     background-color: rgba(255, 255, 255, 0.15);
   }
 
-  app-icon {
-    fill: $header-text-color;
+  &.active,
+  &.active:hover {
+    color: $text-primary;
+    background-color: $edit-banner-bg;
+    border-color: $edit-banner-border;
   }
 }
 
-.nav-sign-in-link {
-  color: $header-text-color;
-  text-decoration: underline;
-  font-size: 0.95em;
-  white-space: nowrap;
-
-  &:hover {
-    color: $header-text-color;
-    opacity: 0.85;
-  }
+.short-label {
+  display: none;
 }
 
-// On a phone the "New concept" label is dropped; the + icon carries it.
-@media (max-width: 560px) {
-  .nav-new-concept .label {
+// On a phone: shorter tab names and an icon-only edit toggle, so the title,
+// both tabs and the avatar fit on one line at 360px.
+@media (max-width: 600px) {
+  .nav-bar {
+    gap: 0.4em;
+    padding: 0.5em 0.6em;
+  }
+
+  .nav-link {
+    padding: 0.35em 0.5em;
+  }
+
+  .long-label,
+  .nav-edit-toggle .label {
     display: none;
   }
 
-  .nav-bar {
-    gap: 0.5em;
-    padding: 0.5em 0.6em;
+  .short-label {
+    display: inline;
   }
 }

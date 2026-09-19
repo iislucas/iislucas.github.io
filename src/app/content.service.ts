@@ -25,6 +25,7 @@ import {
   query,
   setDoc,
   Unsubscribe,
+  updateDoc,
   where,
 } from 'firebase/firestore';
 import { FIREBASE_APP } from './app.config';
@@ -34,6 +35,8 @@ import {
   Concept,
   conceptToFirestoreDoc,
   firestoreDocToConcept,
+  initConcept,
+  slugify,
 } from './data-model/concept';
 import {
   firestoreDocToProfile,
@@ -45,6 +48,9 @@ import {
 export const CONCEPTS_COLLECTION = 'concepts';
 
 export type SaveResult = { success: true } | { success: false; message: string };
+
+// A created concept reports the slug it was given, which is where it now lives.
+export type CreateResult = { success: true; slug: string } | { success: false; message: string };
 
 @Injectable({ providedIn: 'root' })
 export class ContentService {
@@ -133,31 +139,48 @@ export class ContentService {
     return this.concepts().find((c) => c.slug === slug);
   }
 
-  /** True when a document with this slug already exists — used before a create. */
-  public async slugExists(slug: string): Promise<boolean> {
-    const snapshot = await getDoc(doc(this.db, CONCEPTS_COLLECTION, slug));
-    return snapshot.exists();
-  }
-
   /**
-   * Creates or replaces a concept. `created` is preserved on an existing
-   * document and stamped on a new one; `lastUpdated` is always stamped now.
+   * Creates a new, unpublished concept with just a title, and returns its
+   * slug. The slug is derived from the title and is fixed from then on: it is
+   * the document id and the URL, and changing it would break links.
    */
-  public async saveConcept(concept: Concept): Promise<SaveResult> {
-    if (!concept.slug) {
-      return { success: false, message: 'A concept needs a URL slug before it can be saved.' };
+  public async createConcept(title: string): Promise<CreateResult> {
+    const slug = slugify(title);
+    if (!slug) {
+      return { success: false, message: 'The title needs at least one letter or digit.' };
+    }
+    // Creating over an existing slug would silently replace that concept.
+    if ((await getDoc(doc(this.db, CONCEPTS_COLLECTION, slug))).exists()) {
+      return { success: false, message: `A concept already exists at /concepts/${slug}.` };
     }
     const now = new Date().toISOString();
-    const toSave: Concept = {
-      ...concept,
-      created: concept.created || now,
+    // New concepts go to the end of the gallery; the order is editable after.
+    const lastOrder = Math.max(0, ...this.concepts().map((c) => c.order));
+    const concept: Concept = {
+      ...initConcept(slug),
+      title: title.trim(),
+      order: lastOrder + 10,
+      created: now,
       lastUpdated: now,
     };
     try {
-      await setDoc(doc(this.db, CONCEPTS_COLLECTION, toSave.slug), conceptToFirestoreDoc(toSave));
+      await setDoc(doc(this.db, CONCEPTS_COLLECTION, slug), conceptToFirestoreDoc(concept));
+      return { success: true, slug };
+    } catch (error) {
+      console.error('ContentService: createConcept failed', error);
+      return { success: false, message: describeWriteError(error) };
+    }
+  }
+
+  /** Writes some of a concept's fields, leaving the rest as they are. */
+  public async updateConcept(slug: string, changes: Partial<Concept>): Promise<SaveResult> {
+    const { slug: _slug, ...fields } = changes;
+    const update: Partial<Concept> = { ...fields, lastUpdated: new Date().toISOString() };
+    try {
+      await updateDoc(doc(this.db, CONCEPTS_COLLECTION, slug), update);
       return { success: true };
     } catch (error) {
-      console.error('ContentService: saveConcept failed', error);
+      console.error('ContentService: updateConcept failed', error);
       return { success: false, message: describeWriteError(error) };
     }
   }
@@ -172,15 +195,19 @@ export class ContentService {
     }
   }
 
-  public async saveProfile(profile: Profile): Promise<SaveResult> {
+  /**
+   * Writes some of the profile's fields. A merge rather than an update, so
+   * that the first edit on a fresh project creates the document.
+   */
+  public async updateProfile(changes: Partial<Profile>): Promise<SaveResult> {
+    const update: Partial<Profile> = { ...changes, lastUpdated: new Date().toISOString() };
     try {
-      await setDoc(doc(this.db, PROFILE_DOC_PATH.collection, PROFILE_DOC_PATH.docId), {
-        ...profile,
-        lastUpdated: new Date().toISOString(),
+      await setDoc(doc(this.db, PROFILE_DOC_PATH.collection, PROFILE_DOC_PATH.docId), update, {
+        merge: true,
       });
       return { success: true };
     } catch (error) {
-      console.error('ContentService: saveProfile failed', error);
+      console.error('ContentService: updateProfile failed', error);
       return { success: false, message: describeWriteError(error) };
     }
   }

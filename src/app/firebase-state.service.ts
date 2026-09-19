@@ -5,10 +5,13 @@
  * Forked from ilc-members-manager's service of the same name and cut down to
  * what a personal site needs. The membership model is gone; what remains is:
  *
- *   - sign in with Google or email/password, sign out, reset password,
+ *   - sign in with Google or email/password, sign out, reset password — but
+ *     never sign up: accounts are not created from this site,
  *   - a single `isAdmin` bit, read from the same `acl/{email}` document shape
  *     that firestore.rules checks. The client read is for the UI only —
  *     hiding an edit button is a convenience, the rules are the enforcement.
+ *     A signed-in account without it is signed back out: sign-in is only for
+ *     the site's editor.
  *
  * Auth state is exposed as signals so zoneless components can bind to it
  * directly.
@@ -19,7 +22,6 @@ import {
   Auth,
   AuthErrorCodes,
   browserLocalPersistence,
-  createUserWithEmailAndPassword,
   getAuth,
   GoogleAuthProvider,
   onAuthStateChanged,
@@ -33,6 +35,7 @@ import {
 } from 'firebase/auth';
 import { doc, Firestore, getDoc, getFirestore } from 'firebase/firestore';
 import { FIREBASE_APP } from './app.config';
+import { NO_NEW_ACCOUNTS_MESSAGE } from './auth-error-messages';
 
 type AuthErrorCodeStr = (typeof AuthErrorCodes)[keyof typeof AuthErrorCodes];
 
@@ -95,6 +98,19 @@ export class FirebaseStateService {
         return;
       }
       const isAdmin = await this.fetchIsAdmin(firebaseUser.email);
+      // Only the editor has any use for a session here. Anyone else — say a
+      // Google account signing in before new accounts were switched off — is
+      // signed straight back out, and the login page says why.
+      if (!isAdmin) {
+        this.loginError.set(NO_NEW_ACCOUNTS_MESSAGE);
+        this.user.set(null);
+        this.loginStatus.set(LoginStatus.SignedOut);
+        await signOut(this.auth).catch((e) =>
+          console.error('FirebaseStateService: sign-out of a non-admin failed', e),
+        );
+        return;
+      }
+      this.loginError.set(null);
       this.user.set({
         firebaseUser,
         email: firebaseUser.email,
@@ -150,19 +166,6 @@ export class FirebaseStateService {
     }
   }
 
-  public async signupWithEmail(email: string, password: string): Promise<AuthOperationResult> {
-    this.loginStatus.set(LoginStatus.LoggingIn);
-    try {
-      const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
-      return { success: true, userCredential };
-    } catch (exception: unknown) {
-      const error = exception as FirebaseAuthError;
-      console.error('Email signup failed:', error);
-      this.loginStatus.set(LoginStatus.SignedOut);
-      return { success: false, errorCode: error.code };
-    }
-  }
-
   public async logout(): Promise<LogoutResult> {
     try {
       this.user.set(null);
@@ -200,7 +203,6 @@ export function createFirebaseStateServiceMock(
     loginError: signal(null),
     loginWithGoogle: () => Promise.resolve({ success: false, errorCode: 'auth/internal-error' }),
     loginWithEmail: () => Promise.resolve({ success: false, errorCode: 'auth/internal-error' }),
-    signupWithEmail: () => Promise.resolve({ success: false, errorCode: 'auth/internal-error' }),
     logout: () => Promise.resolve({ success: true }),
     resetPassword: () => Promise.resolve({ success: true }),
     ...overrides,

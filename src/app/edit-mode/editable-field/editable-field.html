@@ -1,0 +1,96 @@
+@let editing = editMode.active();
+<div
+  class="editable-display"
+  [class.enabled]="editing"
+  [class.hidden]="isOpen()"
+  [attr.role]="editing ? 'button' : null"
+  [attr.tabindex]="editing ? 0 : null"
+  [attr.title]="editing ? 'Edit ' + label().toLowerCase() : null"
+  (click)="onDisplayClick($event)"
+  (keydown.enter)="onDisplayClick($any($event))"
+>
+  @if (editing && isEmpty()) {
+    <span class="empty-text">
+      <app-icon name="add" width="1em" height="1em"></app-icon>
+      {{ shownEmptyText() }}
+    </span>
+  }
+  <ng-content></ng-content>
+</div>
+
+@if (isOpen()) {
+  <div class="editable-editor" (keydown)="onKeydown($event)">
+    @switch (kind()) {
+      @case (EditKind.Text) {
+        <input
+          #textInput
+          type="text"
+          class="edit-input"
+          [attr.aria-label]="label()"
+          [placeholder]="placeholder()"
+          [value]="draft()"
+          (input)="draft.set($any($event.target).value)"
+        />
+      }
+      @case (EditKind.MultilineText) {
+        <textarea
+          #textInput
+          class="edit-input"
+          [attr.aria-label]="label()"
+          [rows]="rows()"
+          [placeholder]="placeholder()"
+          [value]="draft()"
+          (input)="draft.set($any($event.target).value)"
+        ></textarea>
+      }
+      @case (EditKind.Markdown) {
+        <app-markdown-editor
+          bordered
+          [initialValue]="markdownSeed()"
+          [imageUploader]="imageUploader()"
+          (changed)="draft.set($event)"
+        ></app-markdown-editor>
+      }
+    }
+
+    <div class="edit-actions">
+      <span class="edit-label">{{ label() }}</span>
+      @if (saving() || editMode.undoing()) {
+        <app-spinner>Saving…</app-spinner>
+      } @else {
+        <button
+          type="button"
+          class="icon-only-button edit-action accept"
+          title="Accept"
+          (click)="accept()"
+        >
+          <app-icon name="check" width="1.25em" height="1.25em"></app-icon>
+        </button>
+        <button
+          type="button"
+          class="icon-only-button edit-action"
+          title="Cancel"
+          (click)="cancel()"
+        >
+          <app-icon name="close" width="1.25em" height="1.25em"></app-icon>
+        </button>
+        <button
+          type="button"
+          class="icon-only-button edit-action"
+          [title]="canUndo() ? 'Undo the last saved change' : 'No saved change to undo'"
+          [disabled]="!canUndo()"
+          (click)="undo()"
+        >
+          <app-icon name="undo" width="1.25em" height="1.25em"></app-icon>
+        </button>
+      }
+    </div>
+
+    @if (errorMessage(); as message) {
+      <div class="inline-error">
+        <app-icon name="warning" width="1.1em" height="1.1em"></app-icon>
+        <span>{{ message }}</span>
+      </div>
+    }
+  </div>
+}

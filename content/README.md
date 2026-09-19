@@ -71,5 +71,5 @@ links to:
 - `url` -> anything else — a project page or an explorable — labelled with its
   host.
 
-All three are optional. After seeding, papers are edited in the app on
-`/profile/edit`, like the rest of the profile.
+All three are optional. After seeding, papers are edited in the app, in edit
+mode on the About page, like the rest of the profile.

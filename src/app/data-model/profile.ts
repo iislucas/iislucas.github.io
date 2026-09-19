@@ -46,8 +46,10 @@ export interface Profile {
   tagline: string;
   // The main body of the landing page, as markdown.
   bioMarkdown: string;
-  // Optional portrait image URL.
+  // Optional portrait image URL: the square crop that is shown. The uncropped
+  // upload is kept in `photoOriginalUrl`, so the crop can be redone.
   photoUrl: string;
+  photoOriginalUrl: string;
   // The blurb at the top of the Concept Gallery, as markdown. It lives on the
   // profile because it is voice, not data: one editable piece of writing that
   // frames the gallery, rather than a property of any concept in it.
@@ -59,6 +61,8 @@ export interface Profile {
   // plus the paper's own citation id, so it is stored once rather than being
   // repeated in each paper's URL.
   scholarUserId: string;
+  // The heading of the favourite papers section.
+  favouritePapersTitle: string;
   // The blurb above the favourite papers, as markdown. Same reasoning as
   // `galleryIntroMarkdown`: it frames the list rather than belonging to it.
   favouritePapersIntroMarkdown: string;
@@ -90,9 +94,11 @@ export function initProfile(): Profile {
     tagline: '',
     bioMarkdown: '',
     photoUrl: '',
+    photoOriginalUrl: '',
     galleryIntroMarkdown: '',
     links: [],
     scholarUserId: '',
+    favouritePapersTitle: 'Favourite papers',
     favouritePapersIntroMarkdown: '',
     favouritePapers: [],
     lastUpdated: '',
@@ -221,13 +227,17 @@ export function paperLinks(paper: FavouritePaper, scholarUserId: string): PaperL
 
 function toProfileLinks(value: unknown): ProfileLink[] {
   if (!Array.isArray(value)) return [];
-  return value
-    .filter((l): l is Record<string, unknown> => !!l && typeof l === 'object')
-    .map((l) => ({
-      label: typeof l['label'] === 'string' ? l['label'] : '',
-      url: typeof l['url'] === 'string' ? l['url'] : '',
-    }))
-    .filter((l) => l.url !== '');
+  return (
+    value
+      .filter((l): l is Record<string, unknown> => !!l && typeof l === 'object')
+      .map((l) => ({
+        label: typeof l['label'] === 'string' ? l['label'] : '',
+        url: typeof l['url'] === 'string' ? l['url'] : '',
+      }))
+      // A link just added in edit mode has a label but no URL yet; keep it, so
+      // that it survives long enough to be filled in.
+      .filter((l) => l.url !== '' || l.label !== '')
+  );
 }
 
 function toFavouritePapers(value: unknown): FavouritePaper[] {
@@ -258,6 +268,10 @@ export function firestoreDocToProfile(doc: DocumentSnapshot<DocumentData>): Prof
     tagline: typeof data['tagline'] === 'string' ? data['tagline'] : base.tagline,
     bioMarkdown: typeof data['bioMarkdown'] === 'string' ? data['bioMarkdown'] : base.bioMarkdown,
     photoUrl: typeof data['photoUrl'] === 'string' ? data['photoUrl'] : base.photoUrl,
+    photoOriginalUrl:
+      typeof data['photoOriginalUrl'] === 'string'
+        ? data['photoOriginalUrl']
+        : base.photoOriginalUrl,
     galleryIntroMarkdown:
       typeof data['galleryIntroMarkdown'] === 'string'
         ? data['galleryIntroMarkdown']
@@ -265,6 +279,10 @@ export function firestoreDocToProfile(doc: DocumentSnapshot<DocumentData>): Prof
     links: toProfileLinks(data['links']),
     scholarUserId:
       typeof data['scholarUserId'] === 'string' ? data['scholarUserId'] : base.scholarUserId,
+    favouritePapersTitle:
+      typeof data['favouritePapersTitle'] === 'string' && data['favouritePapersTitle'] !== ''
+        ? data['favouritePapersTitle']
+        : base.favouritePapersTitle,
     favouritePapersIntroMarkdown:
       typeof data['favouritePapersIntroMarkdown'] === 'string'
         ? data['favouritePapersIntroMarkdown']

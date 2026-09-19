@@ -5,20 +5,13 @@
  *
  * The cases worth pinning down here are the ones the site's URLs actually
  * depend on: concept slugs round-tripping through the path, the gallery's
- * filters living in the query string, and `/concepts/new` colliding with
- * `/concepts/:slug` — a collision App resolves deliberately.
+ * filters living in the query string.
  */
 
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { Component, inject, provideZonelessChangeDetection } from '@angular/core';
 import { RoutingService, RoutingConfig } from './routing.service';
-import {
-  Views,
-  ROUTING_CONFIG,
-  initPathPatterns,
-  AppPathPatterns,
-  RESERVED_SLUGS,
-} from './app.config';
+import { Views, ROUTING_CONFIG, initPathPatterns, AppPathPatterns } from './app.config';
 
 @Component({ template: '', standalone: true })
 class TestRouterComponent {
@@ -84,33 +77,12 @@ describe('RoutingService (site routes)', () => {
     expect(service.signals[Views.ConceptView].pathVars['slug']()).toBe('emotional-fixed-points');
   });
 
-  it('matches the edit route under a concept', async () => {
-    await configureTestBed();
-    setUrl('/concepts/inner-gold/edit');
-    await fixture.whenStable();
-    expect(service.matchedPatternId()).toBe(Views.ConceptEdit);
-    expect(service.signals[Views.ConceptEdit].pathVars['slug']()).toBe('inner-gold');
-  });
-
-  /*
-   * `/concepts/new` fits `/concepts/:slug` as well as its own literal pattern,
-   * and the matcher takes the first that fits — so this passes only while
-   * ConceptNew is declared before ConceptView in the route table. Reordering
-   * them would silently turn the "new concept" page into a concept named
-   * "new", which is exactly the regression this pins down.
-   */
-  it('matches /concepts/new as ConceptNew, not as a slug', async () => {
+  it('reads /concepts/new as an ordinary slug, now there is no new-concept page', async () => {
     await configureTestBed();
     setUrl('/concepts/new');
     await fixture.whenStable();
-    expect(service.matchedPatternId()).toBe(Views.ConceptNew);
-  });
-
-  it('reserves every slug that a route would shadow', () => {
-    // Anything in RESERVED_SLUGS must actually be shadowed by a route, and
-    // anything shadowed by a route must be reserved — otherwise the editor
-    // either refuses a usable name or accepts an unreachable one.
-    expect(RESERVED_SLUGS.has('new')).toBe(true);
+    expect(service.matchedPatternId()).toBe(Views.ConceptView);
+    expect(service.signals[Views.ConceptView].pathVars['slug']()).toBe('new');
   });
 
   it('keeps the gallery filters in the query string', async () => {
@@ -144,9 +116,6 @@ describe('RoutingService (site routes)', () => {
     await configureTestBed();
     expect(service.hrefForView(Views.ConceptView, { slug: 'inner-gold' })).toBe(
       '/concepts/inner-gold',
-    );
-    expect(service.hrefForView(Views.ConceptEdit, { slug: 'inner-gold' })).toBe(
-      '/concepts/inner-gold/edit',
     );
   });
 

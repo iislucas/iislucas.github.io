@@ -7,7 +7,11 @@
  * reported to us.
  */
 
-import { googleSignInErrorMessage } from './auth-error-messages';
+import {
+  googleSignInErrorMessage,
+  NO_NEW_ACCOUNTS_MESSAGE,
+  signInErrorMessage,
+} from './auth-error-messages';
 
 describe('googleSignInErrorMessage', () => {
   it('names the configuration fault behind an unauthorized domain', () => {
@@ -30,5 +34,14 @@ describe('googleSignInErrorMessage', () => {
 
   it('still produces a message when there is no code at all', () => {
     expect(googleSignInErrorMessage(undefined)).toContain('unknown error');
+  });
+});
+
+describe('a refused new account', () => {
+  it('says plainly that sign-in is for the editor only, whichever way it was tried', () => {
+    expect(googleSignInErrorMessage('auth/admin-restricted-operation')).toBe(
+      NO_NEW_ACCOUNTS_MESSAGE,
+    );
+    expect(signInErrorMessage('auth/admin-restricted-operation')).toBe(NO_NEW_ACCOUNTS_MESSAGE);
   });
 });

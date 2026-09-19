@@ -1,0 +1,69 @@
+@let editing = editMode.active();
+<div
+  class="editable-display"
+  [class.enabled]="editing"
+  [class.hidden]="isOpen()"
+  [attr.role]="editing ? 'button' : null"
+  [attr.tabindex]="editing ? 0 : null"
+  [attr.title]="editing ? 'Change ' + label().toLowerCase() : null"
+  (click)="open($event)"
+  (keydown.enter)="open($any($event))"
+>
+  @if (editing && !imageUrl()) {
+    <span class="empty-image">
+      <app-icon name="image" width="1.4em" height="1.4em"></app-icon>
+      Add {{ label().toLowerCase() }}
+    </span>
+  }
+  <ng-content></ng-content>
+</div>
+
+@if (isOpen()) {
+  <div class="editable-editor">
+    @if (saving() || editMode.undoing()) {
+      <app-spinner>Saving…</app-spinner>
+    } @else {
+      <app-image-upload-preview
+        [initialImageUrl]="originalUrl() || imageUrl() || null"
+        [aspectRatio]="aspectRatio()"
+        [largeDimensions]="cropSize()"
+        [thumbDimensions]="thumbSize()"
+        [uploadPromptText]="uploadPrompt()"
+        (imageCropped)="onCropped($event)"
+      ></app-image-upload-preview>
+
+      <div class="edit-actions">
+        <span class="edit-label">{{ label() }}</span>
+        @if (imageUrl()) {
+          <button
+            type="button"
+            class="icon-only-button edit-action delete-button"
+            title="Remove the image"
+            (click)="remove()"
+          >
+            <app-icon name="delete" width="1.25em" height="1.25em"></app-icon>
+          </button>
+        }
+        <button type="button" class="icon-only-button edit-action" title="Close" (click)="close()">
+          <app-icon name="close" width="1.25em" height="1.25em"></app-icon>
+        </button>
+        <button
+          type="button"
+          class="icon-only-button edit-action"
+          [title]="canUndo() ? 'Undo the last saved change' : 'No saved change to undo'"
+          [disabled]="!canUndo()"
+          (click)="undo()"
+        >
+          <app-icon name="undo" width="1.25em" height="1.25em"></app-icon>
+        </button>
+      </div>
+    }
+
+    @if (errorMessage(); as message) {
+      <div class="inline-error">
+        <app-icon name="warning" width="1.1em" height="1.1em"></app-icon>
+        <span>{{ message }}</span>
+      </div>
+    }
+  </div>
+}

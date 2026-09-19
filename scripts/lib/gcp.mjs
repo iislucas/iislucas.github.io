@@ -161,3 +161,36 @@ export function describeApiError(result) {
     .join(', ');
   return `HTTP ${result.status}: ${error.message}${details ? ` (${details})` : ''}`;
 }
+
+/**
+ * Resolves the Identity Toolkit admin base path.
+ *
+ * Google documents these endpoints under `/admin/v2/`, while the published
+ * discovery document lists them under `/v2/`. Rather than bet on one, probe
+ * both once and remember which answers; a wrong guess would otherwise make
+ * every auth step fail with a confusing 404.
+ */
+let identityBase = null;
+export async function identityToolkitBase(projectId, token) {
+  if (identityBase) return identityBase;
+  for (const candidate of ['admin/v2', 'v2']) {
+    const probe = await api(
+      `https://identitytoolkit.googleapis.com/${candidate}/projects/${projectId}/config`,
+      { token },
+    );
+    // Anything other than "no such path" means this prefix is the live one:
+    // 403 and 404-on-the-resource still tell us the route exists.
+    if (probe.ok || probe.status === 403 || probe.status === 400) {
+      identityBase = candidate;
+      return identityBase;
+    }
+    if (probe.status === 404 && probe.data?.error?.message?.includes('Firebase Auth')) {
+      identityBase = candidate;
+      return identityBase;
+    }
+  }
+  // Nothing answered; fall back to the documented one so the caller's own
+  // error handling reports something recognisable.
+  identityBase = 'admin/v2';
+  return identityBase;
+}

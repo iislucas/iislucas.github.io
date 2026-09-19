@@ -5,6 +5,9 @@
  * right) minus the breadcrumb accordion and offline machinery, neither of
  * which a four-page site needs.
  *
+ * There is deliberately no "Sign in" link: signing in is only for the site's
+ * editor, who knows where /login is. A visitor is never invited to.
+ *
  * Links are plain <a href> elements. The App component intercepts clicks on
  * same-origin anchors and routes them without a reload, so these behave as SPA
  * navigation while still being real, copyable, middle-clickable links.
@@ -16,6 +19,7 @@ import { RoutingService } from '../routing.service';
 import { AppPathPatterns, Views } from '../app.config';
 import { IconComponent } from '../icons/icon.component';
 import { ProfileMenuComponent } from '../profile-menu/profile-menu';
+import { EditModeService } from '../edit-mode/edit-mode.service';
 
 @Component({
   selector: 'app-header',
@@ -28,6 +32,7 @@ import { ProfileMenuComponent } from '../profile-menu/profile-menu';
 export class HeaderComponent {
   public firebaseState = inject(FirebaseStateService);
   public routingService: RoutingService<AppPathPatterns> = inject(RoutingService);
+  protected editMode = inject(EditModeService);
 
   protected Views = Views;
   protected menuOpen = signal(false);
@@ -38,35 +43,10 @@ export class HeaderComponent {
 
   protected homeHref = computed(() => this.routingService.hrefForView(Views.Home));
   protected conceptsHref = computed(() => this.routingService.hrefForView(Views.Concepts));
-  protected newConceptHref = computed(() => this.routingService.hrefForView(Views.ConceptNew));
-
-  /**
-   * The gallery has its own "New concept" button next to its heading, so the
-   * header's would be a second copy of the same control in the same corner of
-   * the screen. Show the header's everywhere else.
-   */
-  protected showNewConceptAction = computed(
-    () => this.isAdmin() && this.currentView() !== Views.Concepts,
-  );
 
   /** Highlights the Concepts tab on the gallery and on any single concept page. */
   protected isConceptsSection = computed(() => {
     const view = this.currentView();
-    return (
-      view === Views.Concepts ||
-      view === Views.ConceptView ||
-      view === Views.ConceptNew ||
-      view === Views.ConceptEdit
-    );
-  });
-
-  /**
-   * The current URL, encoded for the login page's `returnUrl`, so that signing
-   * in from a concept page comes back to that concept rather than to Home.
-   */
-  protected loginHref = computed(() => {
-    let path = window.location.pathname + window.location.search;
-    if (path.startsWith('/')) path = path.substring(1);
-    return `/login?returnUrl=${encodeURIComponent(path)}`;
+    return view === Views.Concepts || view === Views.ConceptView;
   });
 }
