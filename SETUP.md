@@ -18,6 +18,9 @@ pnpm run seed                      # load content/ into Firestore
 pnpm start
 ```
 
+No passwords anywhere: every command above authenticates with the credentials
+`gcloud auth login` already left behind.
+
 The rest of this file explains each step, and what to do when one misbehaves.
 
 ## Run it with no Firebase project at all
@@ -33,9 +36,15 @@ pnpm run emulator:start
 pnpm run start:emulator
 ```
 
-Open http://localhost:4200. To put content in it, create a user in the
-Emulator UI (http://127.0.0.1:4000/auth — add a user, tick "Email verified"),
-then:
+Open http://localhost:4200. To put content in it:
+
+```bash
+pnpm run seed -- --emulator
+```
+
+That needs no account at all against the emulator. To exercise the rules
+locally instead, create a verified user in the Emulator UI
+(http://127.0.0.1:4000/auth), then:
 
 ```bash
 pnpm run admin:add you@example.com -- --emulator
@@ -127,9 +136,21 @@ pnpm run seed -- --dry-run    # parse and report, write nothing
 pnpm run seed                 # write
 ```
 
-It signs in as an ordinary user and writes **through the rules**, so a
-successful seed is also a check that step 3 worked. It reads `SEED_EMAIL` and
-`SEED_PASSWORD` from the environment, so no password is stored in a file.
+By default it writes with your **gcloud credentials**, so there is no password
+to supply — which matters if you sign in with Google, because then your
+account has no password at all. Those are project-owner credentials, the same
+authority the Firebase console writes with, so they bypass the security rules.
+
+There is a second mode that goes **through** the rules instead:
+
+```bash
+SEED_EMAIL=you@example.com SEED_PASSWORD=... pnpm run seed -- --via-rules
+```
+
+This signs in as an ordinary user, so every write is checked by
+`firestore.rules` — which makes a successful run a proof that step 3 worked.
+Worth doing once when setting a project up, if the account has a password.
+Setting `SEED_EMAIL` and `SEED_PASSWORD` selects this mode on its own.
 
 After seeding, edit in the app — Firestore is the source of truth from then on,
 and re-running the seed would overwrite your edits with the files.
