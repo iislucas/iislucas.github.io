@@ -66,7 +66,7 @@ would have you click through:
 | Web app | Registers one, or reuses the existing one |
 | Config | Writes `src/environments/environment.local.ts` from its SDK config |
 | Auth | Turns on Email/Password sign-in; reports on Google sign-in |
-| Domains | Authorizes `iislucas.github.io`, and re-asserts the defaults |
+| Domains | Authorizes `iislucas.github.io`, re-asserts the defaults, reports what it could not set |
 
 It authenticates with the credentials from `gcloud auth login` — no service
 account key, and no second `gcloud auth application-default login`.
@@ -209,6 +209,8 @@ and re-running the seed would overwrite your edits with the files.
    diagnosable.
 
 `pnpm run firebase:setup` already authorized `iislucas.github.io` for sign-in.
+It reads the list back afterwards, so a run that ends without a warning about
+authorized domains is a run that confirmed them.
 
 The build copies `index.html` to `404.html`, which is how a static host serves
 deep links like `/concepts/inner-gold`: Pages returns `404.html` for any
@@ -231,7 +233,8 @@ Get started once in the console, then re-run it.
 
 **Google sign-in fails with `auth/unauthorized-domain`** — the address the
 page is served from is missing from Authentication → Settings → Authorized
-domains. The check is against the browser's address bar, so add the one you are
+domains. Re-run `pnpm run firebase:setup`: it adds the ones it can and prints
+the console link for anything it could not. The check is against the browser's address bar, so add the one you are
 actually on: `localhost` for `pnpm start`, `iislucas.github.io` for the live
 site. `<project>.firebaseapp.com` must be there too — it hosts the OAuth
 redirect handler, so without it Google sign-in fails from every address at
