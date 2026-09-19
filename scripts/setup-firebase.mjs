@@ -68,8 +68,11 @@ const defaultAuthorizedDomains = (projectId) => [
   `${projectId}.web.app`,
 ];
 
-// Where the site actually lives, which Firebase has no way to guess.
-const EXTRA_AUTHORIZED_DOMAINS = ['iislucas.github.io'];
+// Where the site actually lives, which Firebase has no way to guess. Sign-in
+// is checked against the browser's address bar, so every domain the site is
+// reachable on belongs here — the custom domains on Firebase Hosting, and the
+// old GitHub Pages address, which still serves a redirect.
+const EXTRA_AUTHORIZED_DOMAINS = ['iislucas.io', 'iislucas.dev', 'iislucas.github.io'];
 
 function parseArgs(argv) {
   const args = {

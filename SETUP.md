@@ -66,7 +66,7 @@ would have you click through:
 | Web app | Registers one, or reuses the existing one |
 | Config | Writes `src/environments/environment.local.ts` from its SDK config |
 | Auth | Turns on Email/Password sign-in; reports on Google sign-in |
-| Domains | Authorizes `iislucas.github.io`, re-asserts the defaults, reports what it could not set |
+| Domains | Authorizes the site's domains, re-asserts the defaults, reports what it could not set |
 
 It authenticates with the credentials from `gcloud auth login` — no service
 account key, and no second `gcloud auth application-default login`.
@@ -185,36 +185,98 @@ Setting `SEED_EMAIL` and `SEED_PASSWORD` selects this mode on its own.
 After seeding, edit in the app — Firestore is the source of truth from then on,
 and re-running the seed would overwrite your edits with the files.
 
-## Deploy to GitHub Pages
+## Deploy
 
-`.github/workflows/deploy-pages.yml` builds and publishes on every push to
-`main`.
+The site is served from **Firebase Hosting** at `iislucas.io`, with
+`iislucas.dev` redirecting to it. `iislucas.github.io` stays alive as a
+redirect too.
 
-1. **Settings → Pages → Build and deployment → Source: GitHub Actions.**
-2. **Settings → Secrets and variables → Actions → Variables** — add:
+Firebase Hosting rather than GitHub Pages for one concrete reason: Firebase
+Authentication checks a sign-in against the browser's address bar, so wherever
+the site is served from has to be an authorized domain. Serving it from a
+domain Firebase already knows about removes a whole class of
+`auth/unauthorized-domain` failure, and Hosting does real SPA rewrites, so
+there is no `404.html` copy to maintain.
 
-   | Variable | From |
-   | --- | --- |
-   | `FIREBASE_API_KEY` | `firebase.apiKey` in `environment.local.ts` |
-   | `FIREBASE_AUTH_DOMAIN` | `firebase.authDomain` |
-   | `FIREBASE_PROJECT_ID` | `firebase.projectId` |
-   | `FIREBASE_STORAGE_BUCKET` | `firebase.storageBucket` |
-   | `FIREBASE_MESSAGING_SENDER_ID` | `firebase.messagingSenderId` |
-   | `FIREBASE_APP_ID` | `firebase.appId` |
-   | `FIREBASE_MEASUREMENT_ID` | optional |
-   | `ADMIN_EMAIL` | contact address shown on the login page |
+| Workflow | What it does |
+| --- | --- |
+| `deploy-hosting.yml` | Builds the app and deploys it to Firebase Hosting on every push to `main` |
+| `deploy-pages.yml` | Publishes `pages-redirect/index.html` to GitHub Pages, forwarding the old address |
 
-   Repository *variables*, not secrets: the build prints them into the bundle
-   either way, and variables stay readable in logs, which makes a wrong value
-   diagnosable.
+### 1. Repository variables
 
-`pnpm run firebase:setup` already authorized `iislucas.github.io` for sign-in.
-It reads the list back afterwards, so a run that ends without a warning about
-authorized domains is a run that confirmed them.
+**Settings → Secrets and variables → Actions → Variables** — add:
 
-The build copies `index.html` to `404.html`, which is how a static host serves
-deep links like `/concepts/inner-gold`: Pages returns `404.html` for any
-unmatched path, and the app's router reads the URL as usual.
+| Variable | From |
+| --- | --- |
+| `FIREBASE_API_KEY` | `firebase.apiKey` in `environment.local.ts` |
+| `FIREBASE_AUTH_DOMAIN` | `firebase.authDomain` |
+| `FIREBASE_PROJECT_ID` | `firebase.projectId` |
+| `FIREBASE_STORAGE_BUCKET` | `firebase.storageBucket` |
+| `FIREBASE_MESSAGING_SENDER_ID` | `firebase.messagingSenderId` |
+| `FIREBASE_APP_ID` | `firebase.appId` |
+| `FIREBASE_MEASUREMENT_ID` | optional |
+| `ADMIN_EMAIL` | contact address shown on the login page |
+
+Repository *variables*, not secrets: the build prints them into the bundle
+either way, and variables stay readable in logs, which makes a wrong value
+diagnosable. The build fails with the names of any that are missing.
+
+Moving to Firebase Hosting does not remove this step. Hosting can serve its own
+config at `/__/firebase/init.js`, but the app reads config at build time, and
+`adminEmail` is not part of a Firebase config at all.
+
+### 2. Deploy credential
+
+**Settings → Secrets and variables → Actions → Secrets** — add
+`FIREBASE_SERVICE_ACCOUNT`, the full JSON key of a service account with the
+**Firebase Hosting Admin** role:
+
+```bash
+gcloud iam service-accounts create github-deploy --project=<project>
+gcloud projects add-iam-policy-binding <project> \
+  --member=serviceAccount:github-deploy@<project>.iam.gserviceaccount.com \
+  --role=roles/firebasehosting.admin
+gcloud iam service-accounts keys create key.json \
+  --iam-account=github-deploy@<project>.iam.gserviceaccount.com
+```
+
+Paste the contents of `key.json` as the secret value, then delete the local
+file. This one **is** secret, unlike the variables above.
+
+### 3. Custom domains
+
+In the console, Hosting → **Add custom domain**:
+
+1. Add `iislucas.io` as the primary domain.
+2. Add `iislucas.dev` and choose the **redirect** option, pointing it at
+   `iislucas.io`, so the two do not compete as duplicate content.
+
+Firebase gives you the A / TXT records to set at your registrar, and issues the
+certificates once they resolve. Propagation is usually minutes but can take
+longer.
+
+### 4. Authorize the domains for sign-in
+
+A custom domain that Firebase serves is still not automatically allowed to
+*complete a sign-in*. Run:
+
+```bash
+pnpm run firebase:setup
+```
+
+It asserts `iislucas.io`, `iislucas.dev` and `iislucas.github.io` alongside the
+defaults, reads the list back to confirm, and prints the console link for
+anything it could not set.
+
+### 5. GitHub Pages
+
+**Settings → Pages → Build and deployment → Source: GitHub Actions.**
+
+`iislucas.github.io` cannot be pointed at Firebase Hosting with a custom domain,
+because GitHub controls DNS for `github.io`. Keeping the old address working
+therefore means serving a redirect from Pages, which is all `deploy-pages.yml`
+does now — no build, no config, no secrets.
 
 ## Troubleshooting
 
@@ -234,11 +296,19 @@ Get started once in the console, then re-run it.
 **Google sign-in fails with `auth/unauthorized-domain`** — the address the
 page is served from is missing from Authentication → Settings → Authorized
 domains. Re-run `pnpm run firebase:setup`: it adds the ones it can and prints
-the console link for anything it could not. The check is against the browser's address bar, so add the one you are
-actually on: `localhost` for `pnpm start`, `iislucas.github.io` for the live
+the console link for anything it could not.
+
+The check is against the browser's address bar, so the domain to add is the one
+you are actually on: `localhost` for `pnpm start`, `iislucas.io` for the live
 site. `<project>.firebaseapp.com` must be there too — it hosts the OAuth
 redirect handler, so without it Google sign-in fails from every address at
-once, while password sign-in carries on working.
+once, while password sign-in carries on working. Note that Firebase matches on
+hostname only, and seeds `localhost` but not `127.0.0.1`.
 
-**Deep links 404 on the live site** — the deploy did not produce `404.html`;
-check the "Add SPA fallback" step in the workflow run.
+**Deep links 404 on the live site** — the `rewrites` entry in `firebase.json`
+is what sends every unmatched path to `index.html`; check it survived, and that
+the deploy ran against the site you are looking at.
+
+**A push to `main` did not update the site** — the two workflows have separate
+triggers. `deploy-hosting.yml` runs on every push; `deploy-pages.yml` only runs
+when the redirect itself changes, because nothing else affects it.

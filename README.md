@@ -1,8 +1,8 @@
 # iislucas.github.io
 
-My personal site and Concept Gallery: an Angular app on GitHub Pages, with
-Firebase Auth and Firestore behind it so the content can be edited in place
-rather than through a commit.
+My personal site and Concept Gallery, at **[iislucas.io](https://iislucas.io)**:
+an Angular app on Firebase Hosting, with Firebase Auth and Firestore behind it
+so the content can be edited in place rather than through a commit.
 
 **[SETUP.md](SETUP.md)** has the setup and deployment steps.
 
@@ -68,6 +68,14 @@ reports on both rather than pretending otherwise. See [SETUP.md](SETUP.md).
 
 ## Deployment
 
-Pushing to `main` builds and publishes to GitHub Pages
-(`.github/workflows/deploy-pages.yml`). Content edits do not need a deploy —
-they are Firestore writes, live immediately.
+Pushing to `main` builds and deploys to Firebase Hosting
+(`.github/workflows/deploy-hosting.yml`), which serves `iislucas.io`, with
+`iislucas.dev` redirecting to it. The old `iislucas.github.io` address serves a
+redirect published by `.github/workflows/deploy-pages.yml`.
+
+Serving from a domain Firebase already trusts is deliberate: sign-in is checked
+against the browser's address bar, so the serving origin has to be an
+authorized domain. See [SETUP.md](SETUP.md).
+
+Content edits do not need a deploy — they are Firestore writes, live
+immediately.
