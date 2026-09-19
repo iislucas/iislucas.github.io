@@ -57,8 +57,18 @@ const REQUIRED_APIS = [
   'identitytoolkit.googleapis.com',
 ];
 
-// Domains allowed to complete a sign-in. Firebase seeds localhost and its own
-// two domains; this adds where the site actually lives.
+// Domains allowed to complete a sign-in. Firebase seeds these itself on a new
+// project, but the list is written back whole, so they are named here too and
+// re-asserted on every run: a list that lost them heals instead of staying
+// broken. `<project>.firebaseapp.com` is the one that hosts the OAuth redirect
+// handler, so dropping it breaks Google sign-in everywhere at once.
+const defaultAuthorizedDomains = (projectId) => [
+  'localhost',
+  `${projectId}.firebaseapp.com`,
+  `${projectId}.web.app`,
+];
+
+// Where the site actually lives, which Firebase has no way to guess.
 const EXTRA_AUTHORIZED_DOMAINS = ['iislucas.github.io'];
 
 function parseArgs(argv) {
@@ -398,8 +408,22 @@ async function authorizeDomains(projectId, token, dryRun) {
     return;
   }
 
-  const existing = current.data?.authorizedDomains ?? [];
-  const toAdd = EXTRA_AUTHORIZED_DOMAINS.filter((domain) => !existing.includes(domain));
+  // The PATCH below replaces the list wholesale, so anything missing from
+  // `existing` is not left alone, it is deleted. A response without the field
+  // therefore cannot be read as "no domains are authorized" -- treating it that
+  // way would wipe localhost and the firebaseapp.com redirect handler, which
+  // surfaces later as `auth/unauthorized-domain` in the browser. Bail out
+  // instead, and let the console be the place that fixes it.
+  const existing = current.data?.authorizedDomains;
+  if (!Array.isArray(existing)) {
+    warn(
+      'Skipped: the auth config returned no domain list, and overwriting it would drop the defaults',
+    );
+    return;
+  }
+
+  const wanted = [...defaultAuthorizedDomains(projectId), ...EXTRA_AUTHORIZED_DOMAINS];
+  const toAdd = wanted.filter((domain) => !existing.includes(domain));
   if (toAdd.length === 0) {
     skip('the sign-in domains are already authorized');
     return;
