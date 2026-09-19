@@ -1,7 +1,8 @@
 /* profile-edit.ts
  *
  * Edits the landing page: name, tagline, portrait, outbound links, the bio
- * body, and the blurb that introduces the Concept Gallery.
+ * body, the favourite papers, and the blurb that introduces the Concept
+ * Gallery.
  *
  * Same shape as concept-edit — a working copy in a signal, written only on
  * Save — so that leaving the page without saving changes nothing.
@@ -24,7 +25,13 @@ import { RoutingService } from '../routing.service';
 import { AppPathPatterns, Views } from '../app.config';
 import { MarkdownEditor } from '../markdown-editor/markdown-editor';
 import { IconComponent } from '../icons/icon.component';
-import { Profile, ProfileLink } from '../data-model/profile';
+import {
+  FavouritePaper,
+  initFavouritePaper,
+  paperLinks,
+  Profile,
+  ProfileLink,
+} from '../data-model/profile';
 
 @Component({
   selector: 'app-profile-edit',
@@ -50,6 +57,17 @@ export class ProfileEditComponent {
   // documents after the first render.
   protected initialBio = signal('');
   protected initialGalleryIntro = signal('');
+  protected initialPapersIntro = signal('');
+
+  // Each paper paired with the links it currently resolves to, so the form can
+  // show what a given arXiv or Scholar id will actually point at.
+  protected draftPapers = computed(() => {
+    const draft = this.draft();
+    return draft.favouritePapers.map((paper) => ({
+      paper,
+      links: paperLinks(paper, draft.scholarUserId),
+    }));
+  });
 
   protected homeHref = computed(() => this.routingService.hrefForView(Views.Home));
 
@@ -59,9 +77,14 @@ export class ProfileEditComponent {
       const profile = this.content.profile();
       untracked(() => {
         if (this.loaded() || !profileLoaded) return;
-        this.draft.set({ ...profile, links: profile.links.map((l) => ({ ...l })) });
+        this.draft.set({
+          ...profile,
+          links: profile.links.map((l) => ({ ...l })),
+          favouritePapers: profile.favouritePapers.map((p) => ({ ...p })),
+        });
         this.initialBio.set(profile.bioMarkdown);
         this.initialGalleryIntro.set(profile.galleryIntroMarkdown);
+        this.initialPapersIntro.set(profile.favouritePapersIntroMarkdown);
         this.loaded.set(true);
       });
     });
@@ -97,6 +120,32 @@ export class ProfileEditComponent {
     this.updateField('links', links);
   }
 
+  protected addPaper() {
+    this.updateField('favouritePapers', [...this.draft().favouritePapers, initFavouritePaper()]);
+  }
+
+  protected updatePaper(index: number, field: keyof FavouritePaper, value: string) {
+    const papers = this.draft().favouritePapers.map((paper, i) =>
+      i === index ? { ...paper, [field]: value } : paper,
+    );
+    this.updateField('favouritePapers', papers);
+  }
+
+  protected removePaper(index: number) {
+    this.updateField(
+      'favouritePapers',
+      this.draft().favouritePapers.filter((_, i) => i !== index),
+    );
+  }
+
+  protected movePaper(index: number, delta: number) {
+    const papers = [...this.draft().favouritePapers];
+    const target = index + delta;
+    if (target < 0 || target >= papers.length) return;
+    [papers[index], papers[target]] = [papers[target], papers[index]];
+    this.updateField('favouritePapers', papers);
+  }
+
   protected imageUploader = async (blob: Blob, meta: { originalFile?: File }): Promise<string> => {
     const name = meta.originalFile?.name ?? 'image.png';
     const path = `images/${Date.now()}_${name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
@@ -108,10 +157,12 @@ export class ProfileEditComponent {
   protected async save() {
     this.saving.set(true);
     this.errorMessage.set(null);
-    // Drop links with no URL: an empty row is an abandoned edit, not content.
+    // Drop links with no URL and papers with no title: an empty row is an
+    // abandoned edit, not content.
     const toSave: Profile = {
       ...this.draft(),
       links: this.draft().links.filter((l) => l.url.trim() !== ''),
+      favouritePapers: this.draft().favouritePapers.filter((p) => p.title.trim() !== ''),
     };
     const result = await this.content.saveProfile(toSave);
     this.saving.set(false);

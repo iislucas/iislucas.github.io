@@ -78,6 +78,66 @@ input[type='url'] {
   margin-top: 0.3em;
 }
 
+.paper-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6em;
+  padding: 0.75em;
+  margin-bottom: 0.6em;
+  border: 1px solid $border-color-light;
+  border-radius: 0.4em;
+}
+
+.paper-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+
+  .paper-title-input {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .paper-year-input {
+    flex: 0 0 5em;
+    min-width: 0;
+  }
+}
+
+.paper-ids {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.5em;
+}
+
+.paper-id-field,
+.paper-why-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  min-width: 0;
+
+  textarea {
+    max-width: none;
+    font-family: inherit;
+    font-size: 1em;
+  }
+}
+
+.paper-resolved {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4em;
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    text-decoration: none;
+  }
+}
+
 app-markdown-editor {
   display: block;
   min-height: 320px;
@@ -102,6 +162,14 @@ app-markdown-editor {
 
     .link-label,
     .link-url {
+      flex: 1 1 100%;
+    }
+  }
+
+  .paper-card-header {
+    flex-wrap: wrap;
+
+    .paper-title-input {
       flex: 1 1 100%;
     }
   }

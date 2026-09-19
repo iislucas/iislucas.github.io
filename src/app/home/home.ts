@@ -13,6 +13,7 @@ import { IconComponent } from '../icons/icon.component';
 import { RoutingService } from '../routing.service';
 import { AppPathPatterns, Views } from '../app.config';
 import { ConceptCardComponent } from '../concept-card/concept-card';
+import { paperLinks, scholarProfileUrl } from '../data-model/profile';
 
 // How many concepts the landing page previews before sending you to the gallery.
 const PREVIEW_COUNT = 3;
@@ -49,6 +50,19 @@ export class HomeComponent {
   protected hasMoreConcepts = computed(
     () => this.content.concepts().filter((c) => c.published).length > PREVIEW_COUNT,
   );
+
+  /** The favourite papers, each paired with the links it resolves to, so that
+   * the template never has to work a link out for itself. */
+  protected favouritePapers = computed(() => {
+    const profile = this.profile();
+    return profile.favouritePapers.map((paper) => ({
+      paper,
+      links: paperLinks(paper, profile.scholarUserId),
+    }));
+  });
+
+  /** The Scholar profile, linked from the papers heading; '' when unset. */
+  protected scholarHref = computed(() => scholarProfileUrl(this.profile().scholarUserId));
 
   /** True once loaded and genuinely empty — the cue to show setup guidance. */
   protected isUnseeded = computed(
