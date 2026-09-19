@@ -497,6 +497,64 @@ textarea:disabled {
   opacity: 0.6;
 }
 
+// ----------------------------------------------------------------------------
+//  Edit mode controls
+//  Shared by <app-editable-field>, <app-editable-image> and
+//  <app-editable-list-item>: the accept / cancel / undo row, the full-width
+//  input an open field edits in, and the small action buttons.
+// ----------------------------------------------------------------------------
+
+input.edit-input,
+textarea.edit-input {
+  display: block;
+  width: 100%;
+  max-width: none;
+  font: inherit;
+  color: inherit;
+  line-height: inherit;
+  background-color: $theme-bg-color;
+}
+
+textarea.edit-input {
+  resize: vertical;
+}
+
+.edit-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25em;
+  margin-top: 0.35em;
+  // Fixed size, so a field inside a heading does not get heading-sized buttons.
+  font-size: 1rem;
+  font-weight: normal;
+}
+
+.edit-label {
+  margin-right: auto;
+  font-size: 0.75em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: $text-muted;
+}
+
+.icon-only-button.edit-action {
+  // A comfortable touch target: these are tapped on phones as much as clicked.
+  padding: 6px;
+  color: $text-secondary;
+
+  &.accept {
+    color: $theme-bg-color;
+    background-color: $brand-accent;
+    opacity: 1;
+  }
+
+  &:disabled {
+    opacity: 0.35;
+  }
+}
+
 input[type='checkbox'] {
   accent-color: $heading-accent-color;
   cursor: pointer;

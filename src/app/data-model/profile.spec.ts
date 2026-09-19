@@ -186,6 +186,29 @@ describe('firestoreDocToProfile', () => {
     expect(profile.favouritePapers).toEqual([]);
   });
 
+  it('titles the papers section by default, even when the stored title is blank', () => {
+    expect(firestoreDocToProfile(fakeDoc({})).favouritePapersTitle).toBe('Favourite papers');
+    expect(firestoreDocToProfile(fakeDoc({ favouritePapersTitle: '' })).favouritePapersTitle).toBe(
+      'Favourite papers',
+    );
+    expect(
+      firestoreDocToProfile(fakeDoc({ favouritePapersTitle: 'Papers I like' }))
+        .favouritePapersTitle,
+    ).toBe('Papers I like');
+  });
+
+  it('keeps a link that has a label but no URL yet', () => {
+    const profile = firestoreDocToProfile(
+      fakeDoc({
+        links: [
+          { label: 'New link', url: '' },
+          { label: '', url: '' },
+        ],
+      }),
+    );
+    expect(profile.links).toEqual([{ label: 'New link', url: '' }]);
+  });
+
   it('ignores a favouritePapers field that is not a list', () => {
     expect(firestoreDocToProfile(fakeDoc({ favouritePapers: 'no' })).favouritePapers).toEqual([]);
   });

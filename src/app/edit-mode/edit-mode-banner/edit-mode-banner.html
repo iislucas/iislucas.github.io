@@ -1,0 +1,32 @@
+@if (editMode.active()) {
+  <div class="edit-banner" role="status">
+    <app-icon name="edit" width="1.1em" height="1.1em"></app-icon>
+    <span class="edit-banner-text">
+      <strong>Edit mode</strong>
+      <span class="edit-banner-hint"
+        >— tap anything to change it. Changes save as you accept them.</span
+      >
+    </span>
+    <div class="edit-banner-actions">
+      @if (editMode.lastChange(); as change) {
+        <button
+          type="button"
+          class="subtle-button"
+          [disabled]="editMode.undoing()"
+          [title]="'Undo the last change: ' + change.label"
+          (click)="editMode.undoLast()"
+        >
+          <app-icon name="undo" width="1em" height="1em"></app-icon>
+          <span class="undo-label">Undo {{ change.label.toLowerCase() }}</span>
+        </button>
+      }
+      <button type="button" class="primary-button" (click)="editMode.setActive(false)">Done</button>
+    </div>
+  </div>
+  @if (editMode.undoError(); as message) {
+    <div class="inline-error edit-banner-error">
+      <app-icon name="warning" width="1.1em" height="1.1em"></app-icon>
+      <span>{{ message }}</span>
+    </div>
+  }
+}

@@ -1,0 +1,63 @@
+<div
+  class="list-item"
+  [class.enabled]="editMode.active()"
+  [class.selected]="isSelected()"
+  (click)="select()"
+>
+  @if (isSelected()) {
+    <button
+      type="button"
+      class="add-line above"
+      [title]="'Add a ' + label() + ' above'"
+      (click)="onInsert($event, false)"
+    >
+      <span class="add-line-button">
+        <app-icon name="add" width="1em" height="1em"></app-icon>
+      </span>
+    </button>
+
+    <div class="item-toolbar">
+      <button
+        type="button"
+        class="icon-only-button edit-action"
+        [title]="'Move ' + label() + ' up'"
+        [disabled]="isFirst()"
+        (click)="onMove($event, -1)"
+      >
+        <app-icon name="arrow_upward" width="1.15em" height="1.15em"></app-icon>
+      </button>
+      <button
+        type="button"
+        class="icon-only-button edit-action"
+        [title]="'Move ' + label() + ' down'"
+        [disabled]="isLast()"
+        (click)="onMove($event, 1)"
+      >
+        <app-icon name="arrow_downward" width="1.15em" height="1.15em"></app-icon>
+      </button>
+      <button
+        type="button"
+        class="icon-only-button edit-action delete-button"
+        [title]="'Delete ' + label()"
+        (click)="onRemove($event)"
+      >
+        <app-icon name="delete" width="1.15em" height="1.15em"></app-icon>
+      </button>
+    </div>
+  }
+
+  <ng-content></ng-content>
+
+  @if (isSelected()) {
+    <button
+      type="button"
+      class="add-line below"
+      [title]="'Add a ' + label() + ' below'"
+      (click)="onInsert($event, true)"
+    >
+      <span class="add-line-button">
+        <app-icon name="add" width="1em" height="1em"></app-icon>
+      </span>
+    </button>
+  }
+</div>

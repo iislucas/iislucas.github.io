@@ -1,8 +1,9 @@
 rules_version = '2';
 
 /*
- * Cloud Storage rules. The only uploads are images pasted or picked inside the
- * markdown editor, which land under `images/`. They are public to read (they
+ * Cloud Storage rules. The only uploads are images — pasted or picked in the
+ * markdown editor, or set as a concept's or the profile's picture in edit
+ * mode — and they all land under `images/` (see src/app/image-storage.ts). They are public to read (they
  * get embedded in public pages) and admin-only to write.
  *
  * Storage rules cannot read Firestore, so the `acl/{email}` document that

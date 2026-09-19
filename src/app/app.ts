@@ -8,19 +8,18 @@
  * and crawlable — while still navigating without a page load.
  */
 
-import { Component, computed, effect, HostListener, inject } from '@angular/core';
-import { FirebaseStateService, LoginStatus } from './firebase-state.service';
+import { Component, computed, effect, HostListener, inject, untracked } from '@angular/core';
 import { RoutingService } from './routing.service';
-import { ADMIN_VIEWS, AppPathPatterns, Views } from './app.config';
+import { AppPathPatterns, Views } from './app.config';
 import { HeaderComponent } from './header/header';
 import { HomeComponent } from './home/home';
 import { ConceptGalleryComponent } from './concept-gallery/concept-gallery';
 import { ConceptViewComponent } from './concept-view/concept-view';
-import { ConceptEditComponent } from './concept-edit/concept-edit';
-import { ProfileEditComponent } from './profile-edit/profile-edit';
 import { LoginComponent } from './login/login';
 import { NotFoundComponent } from './not-found/not-found';
 import { FooterComponent } from './footer/footer';
+import { EditModeBannerComponent } from './edit-mode/edit-mode-banner/edit-mode-banner';
+import { EditModeService } from './edit-mode/edit-mode.service';
 
 @Component({
   selector: 'app-root',
@@ -30,31 +29,21 @@ import { FooterComponent } from './footer/footer';
     HomeComponent,
     ConceptGalleryComponent,
     ConceptViewComponent,
-    ConceptEditComponent,
-    ProfileEditComponent,
     LoginComponent,
     NotFoundComponent,
     FooterComponent,
+    EditModeBannerComponent,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
 export class App {
-  protected firebaseState = inject(FirebaseStateService);
   protected routingService: RoutingService<AppPathPatterns> = inject(RoutingService);
+  private editMode = inject(EditModeService);
 
   protected Views = Views;
   protected currentView = computed(() => this.routingService.matchedPatternId() as Views | null);
   protected isNotFound = computed(() => this.currentView() === null);
-
-  /**
-   * An admin-only route reached while signed out. We wait for auth to resolve
-   * before deciding — otherwise a returning admin gets bounced to the login
-   * page during the moment before Firebase reports their session.
-   */
-  protected isAwaitingAuth = computed(
-    () => this.firebaseState.loginStatus() === LoginStatus.Loading,
-  );
 
   constructor() {
     // Keep the document title in step with the view; it is what shows in tabs,
@@ -64,24 +53,16 @@ export class App {
       const titles: Partial<Record<Views, string>> = {
         [Views.Home]: 'Lucas Dixon',
         [Views.Concepts]: 'Concept Gallery — Lucas Dixon',
-        [Views.ConceptNew]: 'New concept — Lucas Dixon',
-        [Views.ConceptEdit]: 'Edit concept — Lucas Dixon',
-        [Views.ProfileEdit]: 'Edit landing page — Lucas Dixon',
         [Views.Login]: 'Sign in — Lucas Dixon',
       };
       document.title = view ? (titles[view] ?? 'Lucas Dixon') : 'Not found — Lucas Dixon';
     });
 
-    // Send a signed-out visitor away from an admin-only page rather than
-    // rendering an editor they cannot save. The rules would refuse the write
-    // anyway; this just makes the refusal legible.
+    // A half-finished edit or selection does not follow you to another page.
     effect(() => {
-      const view = this.currentView();
-      const status = this.firebaseState.loginStatus();
-      if (!view || !ADMIN_VIEWS.has(view)) return;
-      if (status !== LoginStatus.SignedOut) return;
-      const current = (window.location.pathname + window.location.search).replace(/^\/+/, '');
-      this.routingService.navigateTo(`login?returnUrl=${encodeURIComponent(current)}`);
+      this.currentView();
+      this.routingService.signals[Views.ConceptView].pathVars.slug();
+      untracked(() => this.editMode.clearSelection());
     });
   }
 
@@ -92,6 +73,9 @@ export class App {
    */
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
+    // Something on the page already handled this click — in edit mode, a tap
+    // on a linked title edits it rather than following the link.
+    if (event.defaultPrevented) return;
     const anchor = (event.target as HTMLElement | null)?.closest('a');
     if (!anchor) return;
 

@@ -18,30 +18,21 @@
           <div class="email-chip">{{ user.email }}</div>
           @if (isAdmin()) {
             <span class="admin-chip">Admin</span>
-          } @else {
-            <div class="not-admin-note">
-              Signed in, but this account has no admin access, so nothing here is editable.
-            </div>
           }
         </div>
 
         @if (isAdmin()) {
           <div class="menu-divider"></div>
 
-          <a class="menu-link" [href]="profileEditHref()" (click)="menuOpen.set(false)">
-            <app-icon name="person" width="20px" height="20px"></app-icon>
-            Edit landing page
-          </a>
-
-          <a class="menu-link" [href]="newConceptHref()" (click)="menuOpen.set(false)">
-            <app-icon name="add" width="20px" height="20px"></app-icon>
-            New concept
-          </a>
+          <button class="menu-link menu-button" (click)="toggleEditMode()">
+            <app-icon name="edit" width="20px" height="20px"></app-icon>
+            {{ editMode.active() ? 'Leave edit mode' : 'Edit this site' }}
+          </button>
         }
 
         <div class="menu-divider"></div>
 
-        <button class="menu-link logout-button" (click)="logout()">
+        <button class="menu-link menu-button" (click)="logout()">
           <app-icon name="logout" width="20px" height="20px"></app-icon>
           Sign out
         </button>

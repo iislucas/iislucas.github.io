@@ -15,7 +15,8 @@ pnpm run firebase:setup            # enables APIs, Firestore, auth, writes env c
 pnpm run deploy:rules              # publish firestore.rules
 pnpm run admin:add you@example.com # grant yourself edit access
 pnpm run seed                      # load content/ into Firestore
-pnpm start
+pnpm start                         # sign in once at /login, then:
+pnpm run auth:lock-signups         # stop anyone else creating an account
 ```
 
 No passwords anywhere: every command above authenticates with the credentials
@@ -29,7 +30,7 @@ The fastest way to see the site is against the local emulators, which need no
 cloud project and no credentials:
 
 ```bash
-# Terminal 1 — Auth + Firestore emulators (needs Java)
+# Terminal 1 — Auth, Firestore and Storage emulators (needs Java)
 pnpm run emulator:start
 
 # Terminal 2 — the app, pointed at those emulators
@@ -42,9 +43,12 @@ Open http://localhost:4200. To put content in it:
 pnpm run seed -- --emulator
 ```
 
-That needs no account at all against the emulator. To exercise the rules
-locally instead, create a verified user in the Emulator UI
-(http://127.0.0.1:4000/auth), then:
+That needs no account at all against the emulator. To edit locally, create a
+verified user in the Emulator UI (http://127.0.0.1:4000/auth) and give it the
+custom claim `{"admin": true}` — Storage rules cannot read the `acl`
+collection, so image uploads check that claim (or `ADMIN_EMAIL` in
+storage.rules) instead. Then grant it admin, and optionally seed through the
+rules:
 
 ```bash
 pnpm run admin:add you@example.com -- --emulator
@@ -184,6 +188,27 @@ Setting `SEED_EMAIL` and `SEED_PASSWORD` selects this mode on its own.
 
 After seeding, edit in the app — Firestore is the source of truth from then on,
 and re-running the seed would overwrite your edits with the files.
+
+### 5. `pnpm run auth:lock-signups`
+
+Signing in is only for the site's editor, so once your own account exists —
+sign in at `/login` once first — switch off creating new ones:
+
+```bash
+pnpm run auth:lock-signups                # lock
+pnpm run auth:lock-signups -- --status    # check
+pnpm run auth:lock-signups -- --unlock    # allow new accounts again
+```
+
+This is the Identity Platform setting the console shows as Authentication >
+Settings > User actions > "Enable create (sign-up)". With it off, a Google
+account or email address that has never signed in before is refused by
+Firebase itself (`auth/admin-restricted-operation`), whatever the client does.
+The lock refuses **your** first sign-in too, so if you lock before ever
+signing in, unlock, sign in, and lock again.
+
+The app backs this up: there is no sign-in link anywhere on the site, and an
+existing account without admin access is signed straight back out.
 
 ## Deploy to Firebase Hosting
 

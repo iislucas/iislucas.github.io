@@ -30,25 +30,19 @@
   border-bottom: 1px solid $border-color-light;
 }
 
-.title-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1em;
-
-  h1 {
-    margin: 0;
-    color: $text-primary;
-    font-size: 2em;
-    line-height: 1.15;
-  }
+.concept-header h1 {
+  margin: 0;
+  color: $text-primary;
+  font-size: 2em;
+  line-height: 1.15;
 }
 
-.edit-button {
-  flex-shrink: 0;
-  display: inline-flex;
+.status-row {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.35em;
+  gap: 0.5em;
+  margin-top: 0.6em;
 }
 
 .summary {
@@ -59,21 +53,28 @@
 }
 
 .tag-row {
+  margin-top: 0.9em;
+}
+
+.tag-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 0.3em;
-  margin-top: 0.9em;
 
   .tag-chip {
     text-decoration: none;
   }
 }
 
+.hero-slot {
+  margin-bottom: 1.5em;
+}
+
 .hero-image {
+  display: block;
   width: 100%;
   border-radius: 0.4em;
   border: 1px solid $border-color-light;
-  margin-bottom: 1.5em;
 }
 
 .acknowledgement {
@@ -86,6 +87,58 @@
   font-style: italic;
   line-height: 1.5;
   border-radius: 0 0.3em 0.3em 0;
+}
+
+// Edit-mode-only settings, below the concept.
+.concept-settings {
+  margin-top: 2.5em;
+  padding-top: 1.25em;
+  border-top: 1px dashed $edit-hover-outline;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+}
+
+.setting-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25em 0.75em;
+
+  app-editable-field {
+    flex: 1 1 14em;
+    min-width: 0;
+  }
+}
+
+.setting-label {
+  flex: 0 0 8em;
+  font-size: 0.85em;
+  font-weight: 600;
+  color: $text-secondary;
+}
+
+.setting-hint {
+  margin-left: 0.3em;
+  font-size: 0.85em;
+  color: $text-muted;
+}
+
+.delete-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5em;
+  margin-top: 0.5em;
+}
+
+.confirm-text {
+  color: $theme-error-text-color;
+  font-weight: 600;
+}
+
+.inline-error {
+  margin-top: 1em;
 }
 
 .loading-note {
@@ -107,5 +160,23 @@
     margin: 0;
     color: $text-secondary;
     line-height: 1.5;
+  }
+}
+
+@media (max-width: 600px) {
+  .concept-page {
+    padding-top: 0.9em;
+  }
+
+  .concept-header h1 {
+    font-size: 1.6em;
+  }
+
+  .summary {
+    font-size: 1.02em;
+  }
+
+  .setting-label {
+    flex-basis: 100%;
   }
 }

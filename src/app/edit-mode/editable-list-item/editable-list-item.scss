@@ -1,0 +1,106 @@
+@use '../../../scss_variables' as *;
+
+:host {
+  display: block;
+}
+
+.list-item {
+  position: relative;
+
+  &.enabled {
+    @include editable-hover;
+    // Room for the outline, so neighbouring entries' outlines do not touch.
+    padding: 0.25em 0.4em;
+    margin: 0 -0.4em;
+  }
+
+  &.selected {
+    @include editable-selected;
+    cursor: default;
+    // Clear of the floating toolbar, which overlaps the top edge.
+    padding-top: 1.1em;
+  }
+}
+
+// The floating toolbar straddles the top-right corner of a selected entry.
+.item-toolbar {
+  position: absolute;
+  top: 0;
+  right: 0.5em;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  gap: 0.1em;
+  padding: 0.1em 0.3em;
+  background-color: $theme-bg-color;
+  border: 1px solid $border-color-light;
+  border-radius: 999px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  font-size: 1rem;
+}
+
+// A hairline across the entry's top or bottom edge with a + in the middle.
+// The button is the whole strip, so it is easy to hit on a phone.
+button.add-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  opacity: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+
+  &:hover,
+  &:active {
+    background: none;
+    box-shadow: none;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 12%;
+    right: 12%;
+    top: 50%;
+    border-top: 1px dashed $edit-selected-outline;
+    opacity: 0.45;
+    transition: opacity 0.15s ease;
+  }
+
+  &:hover::before {
+    opacity: 1;
+  }
+
+  &.above {
+    top: -11px;
+  }
+
+  &.below {
+    bottom: -11px;
+  }
+}
+
+.add-line-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  color: $theme-bg-color;
+  background-color: $edit-selected-outline;
+  font-size: 0.9rem;
+}
+
+// Keep the "add above" strip clear of the toolbar on the right.
+button.add-line.above {
+  right: 7.5em;
+}

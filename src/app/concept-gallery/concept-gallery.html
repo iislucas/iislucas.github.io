@@ -2,18 +2,80 @@
   <header class="gallery-header">
     <div class="heading-row">
       <h1>Concept Gallery</h1>
-      @if (isAdmin()) {
-        <a class="button new-concept-button" [href]="newConceptHref()">
+      @if (editing() && !creating()) {
+        <button type="button" class="outlined-button" (click)="startCreating()">
           <app-icon name="add" width="1em" height="1em"></app-icon>
           New concept
-        </a>
+        </button>
       }
     </div>
-    @if (content.profile().galleryIntroMarkdown) {
-      <app-markdown-viewer
-        class="gallery-intro"
-        [markdown]="content.profile().galleryIntroMarkdown"
-      ></app-markdown-viewer>
+
+    @if (creating()) {
+      <div class="new-concept-form">
+        <input
+          type="text"
+          class="edit-input"
+          aria-label="New concept title"
+          placeholder="Title of the new concept"
+          [value]="newTitle()"
+          (input)="newTitle.set($any($event.target).value)"
+          (keydown)="onNewTitleKeydown($event)"
+        />
+        <div class="edit-actions">
+          <span class="edit-label">
+            @if (newSlug()) {
+              Will live at /concepts/{{ newSlug() }}, as an unpublished draft
+            } @else {
+              New concept
+            }
+          </span>
+          @if (createBusy()) {
+            <span class="edit-label">Creating…</span>
+          } @else {
+            <button
+              type="button"
+              class="icon-only-button edit-action accept"
+              title="Create"
+              [disabled]="!newSlug()"
+              (click)="createConcept()"
+            >
+              <app-icon name="check" width="1.25em" height="1.25em"></app-icon>
+            </button>
+            <button
+              type="button"
+              class="icon-only-button edit-action"
+              title="Cancel"
+              (click)="cancelCreating()"
+            >
+              <app-icon name="close" width="1.25em" height="1.25em"></app-icon>
+            </button>
+          }
+        </div>
+        @if (createError(); as message) {
+          <div class="inline-error">
+            <app-icon name="warning" width="1.1em" height="1.1em"></app-icon>
+            <span>{{ message }}</span>
+          </div>
+        }
+      </div>
+    }
+
+    @if (content.profile().galleryIntroMarkdown || editing()) {
+      <div class="gallery-intro">
+        <app-editable-field
+          fieldId="gallery.intro"
+          label="Gallery introduction"
+          emptyText="Add an introduction"
+          [kind]="EditKind.Markdown"
+          [value]="content.profile().galleryIntroMarkdown"
+          [commit]="commitIntro"
+          [imageUploader]="markdownUploader"
+        >
+          <app-markdown-viewer
+            [markdown]="content.profile().galleryIntroMarkdown"
+          ></app-markdown-viewer>
+        </app-editable-field>
+      </div>
     }
   </header>
 

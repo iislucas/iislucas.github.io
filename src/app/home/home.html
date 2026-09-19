@@ -7,47 +7,132 @@
       <p>
         The landing page is empty because the <code>site/profile</code> document has not been
         written yet. Run <code>pnpm run seed</code> to load the contents of the
-        <code>content/</code> folder into Firestore, or sign in as an admin and write it here.
+        <code>content/</code> folder into Firestore, or sign in as an admin and fill it in with edit
+        mode.
       </p>
       @if (isAdmin()) {
-        <a class="button" [href]="editHref()">Edit the landing page</a>
+        <button type="button" class="primary-button" (click)="editMode.setActive(true)">
+          Turn on edit mode
+        </button>
       }
     </div>
   } @else {
+    @let p = profile();
     <header class="profile-header">
-      @if (profile().photoUrl) {
-        <img class="profile-photo" [src]="profile().photoUrl" alt="" />
+      @if (p.photoUrl || editing()) {
+        <div class="profile-photo-slot">
+          <app-editable-image
+            fieldId="profile.photo"
+            label="Photo"
+            [imageUrl]="p.photoUrl"
+            [originalUrl]="p.photoOriginalUrl"
+            [storageFolder]="profileImageFolder"
+            [aspectRatio]="1"
+            [cropSize]="{ width: 400, height: 400 }"
+            [commit]="savePhoto"
+          >
+            @if (p.photoUrl) {
+              <img class="profile-photo" [src]="p.photoUrl" alt="" />
+            }
+          </app-editable-image>
+        </div>
       }
       <div class="profile-heading">
-        <h1>{{ profile().name }}</h1>
-        @if (profile().tagline) {
-          <p class="tagline">{{ profile().tagline }}</p>
+        <h1>
+          <app-editable-field
+            fieldId="profile.name"
+            label="Name"
+            [value]="p.name"
+            [commit]="profileCommit('name')"
+            >{{ p.name }}</app-editable-field
+          >
+        </h1>
+        @if (p.tagline || editing()) {
+          <p class="tagline">
+            <app-editable-field
+              fieldId="profile.tagline"
+              label="Tagline"
+              [kind]="EditKind.MultilineText"
+              [value]="p.tagline"
+              [commit]="profileCommit('tagline')"
+              >{{ p.tagline }}</app-editable-field
+            >
+          </p>
         }
-        @if (profile().links.length > 0) {
-          <div class="profile-links">
-            @for (link of profile().links; track link.url) {
-              <a class="tag-chip profile-link" [href]="link.url" target="_blank" rel="noopener">
-                {{ link.label || link.url }}
-                <app-icon name="launch" width="0.9em" height="0.9em"></app-icon>
-              </a>
+        @if (p.links.length > 0 || editing()) {
+          <div class="profile-links" [class.editing]="editing()">
+            @for (link of p.links; track $index) {
+              @if (editing()) {
+                <app-editable-list-item
+                  class="link-item"
+                  [itemId]="'link.' + $index"
+                  label="link"
+                  [index]="$index"
+                  [count]="p.links.length"
+                  (move)="moveLink($index, $event)"
+                  (remove)="removeLink($index)"
+                  (insert)="insertLink($event)"
+                >
+                  <app-editable-field
+                    [fieldId]="'link.' + $index + '.label'"
+                    label="Link label"
+                    [value]="link.label"
+                    [commit]="linkCommit($index, 'label')"
+                  >
+                    <span class="tag-chip profile-link">{{ link.label || link.url }}</span>
+                  </app-editable-field>
+                  <app-editable-field
+                    [fieldId]="'link.' + $index + '.url'"
+                    label="Link URL"
+                    emptyText="Add the URL"
+                    placeholder="https://…"
+                    [value]="link.url"
+                    [commit]="linkCommit($index, 'url')"
+                  >
+                    <span class="link-url">{{ link.url }}</span>
+                  </app-editable-field>
+                </app-editable-list-item>
+              } @else {
+                <a class="tag-chip profile-link" [href]="link.url" target="_blank" rel="noopener">
+                  {{ link.label || link.url }}
+                  <app-icon name="launch" width="0.9em" height="0.9em"></app-icon>
+                </a>
+              }
+            }
+            @if (editing() && p.links.length === 0) {
+              <button type="button" class="outlined-button" (click)="insertLink(0)">
+                <app-icon name="add" width="1em" height="1em"></app-icon>
+                Add a link
+              </button>
             }
           </div>
         }
       </div>
-      @if (isAdmin()) {
-        <a class="outlined-button edit-button" [href]="editHref()">
-          <app-icon name="edit" width="1em" height="1em"></app-icon>
-          Edit
-        </a>
-      }
     </header>
 
-    <app-markdown-viewer [markdown]="profile().bioMarkdown"></app-markdown-viewer>
+    <app-editable-field
+      fieldId="profile.bio"
+      label="About"
+      [kind]="EditKind.Markdown"
+      [value]="p.bioMarkdown"
+      [commit]="profileCommit('bioMarkdown')"
+      [imageUploader]="markdownUploader"
+    >
+      <app-markdown-viewer [markdown]="p.bioMarkdown"></app-markdown-viewer>
+    </app-editable-field>
 
-    @if (favouritePapers().length > 0) {
+    @if (favouritePapers().length > 0 || editing()) {
       <section class="favourite-papers">
         <div class="papers-heading">
-          <h2>Favourite papers</h2>
+          <h2>
+            <app-editable-field
+              fieldId="profile.favouritePapersTitle"
+              label="Section title"
+              [value]="p.favouritePapersTitle"
+              [commit]="profileCommit('favouritePapersTitle')"
+              >{{ p.favouritePapersTitle }}</app-editable-field
+            >
+          </h2>
           @if (scholarHref(); as href) {
             <a class="tag-chip papers-scholar-link" [href]="href" target="_blank" rel="noopener">
               all publications
@@ -55,45 +140,160 @@
             </a>
           }
         </div>
-        @if (profile().favouritePapersIntroMarkdown) {
-          <app-markdown-viewer
-            class="papers-intro"
-            [markdown]="profile().favouritePapersIntroMarkdown"
-          ></app-markdown-viewer>
+        @if (editing()) {
+          <div class="edit-only-row">
+            <span class="edit-only-label">Scholar profile</span>
+            <app-editable-field
+              fieldId="profile.scholarUserId"
+              label="Google Scholar profile id"
+              placeholder="nDs3-TMAAAAJ, or paste your Scholar profile URL"
+              [value]="p.scholarUserId"
+              [commit]="profileCommit('scholarUserId')"
+            >
+              <code>{{ p.scholarUserId }}</code>
+            </app-editable-field>
+          </div>
+        }
+        @if (p.favouritePapersIntroMarkdown || editing()) {
+          <app-editable-field
+            fieldId="profile.favouritePapersIntro"
+            label="Introduction"
+            emptyText="Add an introduction"
+            [kind]="EditKind.Markdown"
+            [value]="p.favouritePapersIntroMarkdown"
+            [commit]="profileCommit('favouritePapersIntroMarkdown')"
+            [imageUploader]="markdownUploader"
+          >
+            <app-markdown-viewer
+              class="papers-intro"
+              [markdown]="p.favouritePapersIntroMarkdown"
+            ></app-markdown-viewer>
+          </app-editable-field>
         }
         <ul class="paper-list">
           @for (entry of favouritePapers(); track $index) {
             @let primary = entry.links[0];
             <li class="paper">
-              <h3 class="paper-title">
-                @if (primary) {
-                  <a [href]="primary.url" target="_blank" rel="noopener">{{ entry.paper.title }}</a>
-                } @else {
-                  {{ entry.paper.title }}
-                }
-                @if (entry.paper.year) {
-                  <span class="paper-year">{{ entry.paper.year }}</span>
-                }
-              </h3>
-              @if (entry.links.length > 0) {
-                <div class="paper-links">
-                  @for (link of entry.links; track link.url) {
-                    <a class="tag-chip paper-link" [href]="link.url" target="_blank" rel="noopener">
-                      {{ link.label }}
-                      <app-icon name="launch" width="0.85em" height="0.85em"></app-icon>
-                    </a>
+              <app-editable-list-item
+                [itemId]="'paper.' + $index"
+                label="paper"
+                [index]="$index"
+                [count]="favouritePapers().length"
+                (move)="movePaper($index, $event)"
+                (remove)="removePaper($index)"
+                (insert)="insertPaper($event)"
+              >
+                <h3 class="paper-title">
+                  <app-editable-field
+                    [fieldId]="'paper.' + $index + '.title'"
+                    label="Title"
+                    [value]="entry.paper.title"
+                    [commit]="paperCommit($index, 'title')"
+                  >
+                    @if (primary) {
+                      <a [href]="primary.url" target="_blank" rel="noopener">{{
+                        entry.paper.title
+                      }}</a>
+                    } @else {
+                      {{ entry.paper.title }}
+                    }
+                  </app-editable-field>
+                  @if (entry.paper.year || editing()) {
+                    <span class="paper-year">
+                      <app-editable-field
+                        inline
+                        [fieldId]="'paper.' + $index + '.year'"
+                        label="Year"
+                        [value]="entry.paper.year"
+                        [commit]="paperCommit($index, 'year')"
+                        >{{ entry.paper.year }}</app-editable-field
+                      >
+                    </span>
                   }
-                </div>
-              }
-              @if (entry.paper.whyMarkdown) {
-                <app-markdown-viewer
-                  class="paper-why"
-                  [markdown]="entry.paper.whyMarkdown"
-                ></app-markdown-viewer>
-              }
+                </h3>
+                @if (editing()) {
+                  <div class="paper-id-fields">
+                    <div class="edit-only-row">
+                      <span class="edit-only-label">arXiv</span>
+                      <app-editable-field
+                        [fieldId]="'paper.' + $index + '.arxivId'"
+                        label="arXiv id"
+                        emptyText="none"
+                        placeholder="2401.06102, or an arXiv / alphaXiv link"
+                        [value]="entry.paper.arxivId"
+                        [commit]="paperCommit($index, 'arxivId')"
+                      >
+                        <code>{{ entry.paper.arxivId }}</code>
+                      </app-editable-field>
+                    </div>
+                    <div class="edit-only-row">
+                      <span class="edit-only-label">Scholar</span>
+                      <app-editable-field
+                        [fieldId]="'paper.' + $index + '.scholarCitationId'"
+                        label="Scholar citation id"
+                        emptyText="none"
+                        placeholder="8AbLer7MMksC, or a Scholar citation link"
+                        [value]="entry.paper.scholarCitationId"
+                        [commit]="paperCommit($index, 'scholarCitationId')"
+                      >
+                        <code>{{ entry.paper.scholarCitationId }}</code>
+                      </app-editable-field>
+                    </div>
+                    <div class="edit-only-row">
+                      <span class="edit-only-label">Other link</span>
+                      <app-editable-field
+                        [fieldId]="'paper.' + $index + '.url'"
+                        label="Other link"
+                        emptyText="none"
+                        placeholder="https://… (project page, explorable, …)"
+                        [value]="entry.paper.url"
+                        [commit]="paperCommit($index, 'url')"
+                      >
+                        <span class="link-url">{{ entry.paper.url }}</span>
+                      </app-editable-field>
+                    </div>
+                  </div>
+                } @else if (entry.links.length > 0) {
+                  <div class="paper-links">
+                    @for (link of entry.links; track link.url) {
+                      <a
+                        class="tag-chip paper-link"
+                        [href]="link.url"
+                        target="_blank"
+                        rel="noopener"
+                      >
+                        {{ link.label }}
+                        <app-icon name="launch" width="0.85em" height="0.85em"></app-icon>
+                      </a>
+                    }
+                  </div>
+                }
+                @if (entry.paper.whyMarkdown || editing()) {
+                  <app-editable-field
+                    [fieldId]="'paper.' + $index + '.why'"
+                    label="Why I like it"
+                    emptyText="Add why you like it"
+                    [kind]="EditKind.Markdown"
+                    [value]="entry.paper.whyMarkdown"
+                    [commit]="paperCommit($index, 'whyMarkdown')"
+                    [imageUploader]="markdownUploader"
+                  >
+                    <app-markdown-viewer
+                      class="paper-why"
+                      [markdown]="entry.paper.whyMarkdown"
+                    ></app-markdown-viewer>
+                  </app-editable-field>
+                }
+              </app-editable-list-item>
             </li>
           }
         </ul>
+        @if (editing() && favouritePapers().length === 0) {
+          <button type="button" class="outlined-button" (click)="insertPaper(0)">
+            <app-icon name="add" width="1em" height="1em"></app-icon>
+            Add a paper
+          </button>
+        }
       </section>
     }
 
@@ -106,11 +306,21 @@
             <app-icon name="arrow_forward" width="1em" height="1em"></app-icon>
           </a>
         </div>
-        @if (profile().galleryIntroMarkdown) {
-          <app-markdown-viewer
-            class="gallery-intro"
-            [markdown]="profile().galleryIntroMarkdown"
-          ></app-markdown-viewer>
+        @if (p.galleryIntroMarkdown || editing()) {
+          <app-editable-field
+            fieldId="profile.galleryIntro"
+            label="Gallery introduction"
+            emptyText="Add an introduction"
+            [kind]="EditKind.Markdown"
+            [value]="p.galleryIntroMarkdown"
+            [commit]="profileCommit('galleryIntroMarkdown')"
+            [imageUploader]="markdownUploader"
+          >
+            <app-markdown-viewer
+              class="gallery-intro"
+              [markdown]="p.galleryIntroMarkdown"
+            ></app-markdown-viewer>
+          </app-editable-field>
         }
         <div class="concept-grid">
           @for (concept of previewConcepts(); track concept.slug) {

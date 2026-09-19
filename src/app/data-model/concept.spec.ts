@@ -5,6 +5,7 @@ import {
   conceptToFirestoreDoc,
   firestoreDocToConcept,
   initConcept,
+  parseTags,
   slugify,
 } from './concept';
 import { DocumentData, DocumentSnapshot } from 'firebase/firestore';
@@ -83,6 +84,8 @@ describe('conceptToFirestoreDoc', () => {
       markdown: 'Body **text**.',
       acknowledgement: 'Thanks to someone.',
       tags: ['a', 'b'],
+      imageUrl: 'https://example.com/crop.png',
+      imageOriginalUrl: 'https://example.com/original.png',
       order: 30,
       published: true,
       created: '2026-01-01T00:00:00.000Z',
@@ -106,5 +109,19 @@ describe('compareConcepts', () => {
     const a = { ...initConcept('a'), title: 'Zebra', order: 10 };
     const b = { ...initConcept('b'), title: 'Apple', order: 10 };
     expect([a, b].sort(compareConcepts).map((c) => c.slug)).toEqual(['b', 'a']);
+  });
+});
+
+describe('parseTags', () => {
+  it('splits on commas and trims', () => {
+    expect(parseTags(' emotions,mathematics ,  myth')).toEqual(['emotions', 'mathematics', 'myth']);
+  });
+
+  it('drops empty entries and repeats', () => {
+    expect(parseTags('a, , a,b,')).toEqual(['a', 'b']);
+  });
+
+  it('reads an empty line as no tags', () => {
+    expect(parseTags('  ')).toEqual([]);
   });
 });

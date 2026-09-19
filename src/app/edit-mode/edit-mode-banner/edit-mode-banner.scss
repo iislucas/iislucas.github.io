@@ -1,0 +1,61 @@
+@use '../../../scss_variables' as *;
+
+:host {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.edit-banner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5em 0.75em;
+  padding: 0.45em 1em;
+  background-color: $edit-banner-bg;
+  border-bottom: 1px solid $edit-banner-border;
+  color: $text-primary;
+  font-size: 0.95em;
+}
+
+.edit-banner-text {
+  flex: 1 1 12em;
+  min-width: 0;
+}
+
+.edit-banner-hint {
+  margin-left: 0.3em;
+  color: $text-secondary;
+}
+
+.edit-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-left: auto;
+}
+
+.undo-label {
+  max-width: 14em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.edit-banner-error {
+  margin: 0;
+  border-radius: 0;
+}
+
+// On a phone the explanation is dropped: the banner's colour and the word
+// "Edit mode" carry it, and the buttons need the room.
+@media (max-width: 600px) {
+  .edit-banner-hint {
+    display: none;
+  }
+
+  .undo-label {
+    max-width: 8em;
+  }
+}

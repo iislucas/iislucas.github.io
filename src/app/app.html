@@ -1,5 +1,6 @@
 <div class="app-container">
   <app-header></app-header>
+  <app-edit-mode-banner></app-edit-mode-banner>
 
   <main>
     @switch (currentView()) {
@@ -11,27 +12,6 @@
       }
       @case (Views.ConceptView) {
         <app-concept-view></app-concept-view>
-      }
-      @case (Views.ConceptNew) {
-        @if (isAwaitingAuth()) {
-          <div class="auth-wait">Checking your sign-in…</div>
-        } @else {
-          <app-concept-edit></app-concept-edit>
-        }
-      }
-      @case (Views.ConceptEdit) {
-        @if (isAwaitingAuth()) {
-          <div class="auth-wait">Checking your sign-in…</div>
-        } @else {
-          <app-concept-edit></app-concept-edit>
-        }
-      }
-      @case (Views.ProfileEdit) {
-        @if (isAwaitingAuth()) {
-          <div class="auth-wait">Checking your sign-in…</div>
-        } @else {
-          <app-profile-edit></app-profile-edit>
-        }
       }
       @case (Views.Login) {
         <app-login></app-login>

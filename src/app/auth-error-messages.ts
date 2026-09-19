@@ -13,6 +13,11 @@
  * diagnosable.
  */
 
+// Signing in is only for the site's editor: no one else can create an account,
+// and an existing account without admin access is signed straight back out.
+export const NO_NEW_ACCOUNTS_MESSAGE =
+  "Signing in is only for this site's editor, and new accounts can't be created here.";
+
 /**
  * Failures a password reset can actually fix.
  *
@@ -54,30 +59,14 @@ export function signInErrorMessage(code: string | undefined): string {
       return 'Too many sign-in attempts from this device. Please wait a few minutes, or send yourself a password reset link below.';
     case 'auth/network-request-failed':
       return 'We could not reach the server. Please check your connection and try again.';
+    // New accounts are switched off for the project (see SETUP.md), so this is
+    // someone who has never signed in before — i.e. not the site's editor.
+    case 'auth/admin-restricted-operation':
+      return NO_NEW_ACCOUNTS_MESSAGE;
     case 'auth/operation-not-allowed':
       return 'Password sign-in is not enabled for this account. Please try signing in with Google, or contact us for help.';
     default:
       return `Sign in failed (${code || 'unknown error'}). Please check your connection and try again.`;
-  }
-}
-
-/** A human explanation of a failed account creation. */
-export function signUpErrorMessage(code: string | undefined): string {
-  switch (code) {
-    case 'auth/email-already-in-use':
-      return 'An account already exists for this email. Please sign in with your password, or reset it below.';
-    case 'auth/weak-password':
-      return 'That password is too short. Please use at least 6 characters.';
-    case 'auth/invalid-email':
-      return "That doesn't look like a valid email address. Please check it and try again.";
-    case 'auth/too-many-requests':
-      return 'Too many attempts from this device. Please wait a few minutes and try again.';
-    case 'auth/network-request-failed':
-      return 'We could not reach the server. Please check your connection and try again.';
-    case 'auth/operation-not-allowed':
-      return 'Creating an account with a password is not available right now. Please try signing in with Google, or contact us for help.';
-    default:
-      return `Account creation failed (${code || 'unknown error'}). Please check your connection and try again.`;
   }
 }
 
@@ -94,6 +83,10 @@ export function googleSignInErrorMessage(code: string | undefined): string {
       return 'This account has been disabled. Please contact us for help.';
     case 'auth/network-request-failed':
       return 'We could not reach the server. Please check your connection and try again.';
+    // New accounts are switched off for the project (see SETUP.md), so this is
+    // someone who has never signed in before — i.e. not the site's editor.
+    case 'auth/admin-restricted-operation':
+      return NO_NEW_ACCOUNTS_MESSAGE;
     case 'auth/operation-not-allowed':
       return 'Google sign-in is not available right now. Please use a password instead.';
     // Not a user error at all: the address the site is being served from is

@@ -3,20 +3,13 @@
     <div class="card signed-in-card">
       <h2>You're signed in</h2>
       <p class="signed-in-email">{{ user()?.email }}</p>
-      @if (isAdmin()) {
-        <p>You have admin access: concepts and the landing page are editable.</p>
-      } @else {
-        <p class="note">
-          This account has no admin access, so the site is read-only for it. That is expected unless
-          it is the account with an <code>acl</code> entry.
-        </p>
-      }
+      <p>Turn on edit mode from the header to change anything on the site in place.</p>
       <a class="button" href="/">Go to the site</a>
     </div>
   } @else {
     <div class="card login-card">
       <h2>Sign in</h2>
-      <p class="intro">Signing in is only needed to edit the site.</p>
+      <p class="intro">Signing in is only for this site's editor.</p>
 
       <button class="google-button" (click)="signInWithGoogle()" [disabled]="busy()">
         Continue with Google
@@ -48,7 +41,7 @@
         <button type="submit" class="primary-button" [disabled]="busy()">Sign in</button>
       </form>
 
-      @if (errorMessage(); as message) {
+      @if (shownError(); as message) {
         <div class="inline-error">
           <app-icon name="warning" width="1.1em" height="1.1em"></app-icon>
           <span>{{ message }}</span>

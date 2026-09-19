@@ -5,22 +5,28 @@
 
   <nav class="nav-links">
     <a class="nav-link" [class.active]="currentView() === Views.Home" [href]="homeHref()">About</a>
-    <a class="nav-link" [class.active]="isConceptsSection()" [href]="conceptsHref()"
-      >Concept Gallery</a
-    >
+    <a class="nav-link" [class.active]="isConceptsSection()" [href]="conceptsHref()">
+      <span class="long-label">Concept Gallery</span>
+      <span class="short-label">Concepts</span>
+    </a>
   </nav>
 
-  <div class="nav-actions">
-    @if (showNewConceptAction()) {
-      <a class="nav-new-concept" [href]="newConceptHref()" title="Add a concept">
-        <app-icon name="add" width="1.1em" height="1.1em"></app-icon>
-        <span class="label">New concept</span>
-      </a>
-    }
-    @if (isLoggedIn()) {
+  @if (isLoggedIn()) {
+    <div class="nav-actions">
+      @if (isAdmin()) {
+        <button
+          type="button"
+          class="nav-edit-toggle"
+          [class.active]="editMode.active()"
+          [attr.aria-pressed]="editMode.active()"
+          [title]="editMode.active() ? 'Leave edit mode' : 'Edit this site in place'"
+          (click)="editMode.toggle()"
+        >
+          <app-icon name="edit" width="1.1em" height="1.1em"></app-icon>
+          <span class="label">{{ editMode.active() ? 'Editing' : 'Edit' }}</span>
+        </button>
+      }
       <app-profile-menu></app-profile-menu>
-    } @else if (currentView() !== Views.Login) {
-      <a class="nav-sign-in-link" [href]="loginHref()">Sign in</a>
-    }
-  </div>
+    </div>
+  }
 </div>
