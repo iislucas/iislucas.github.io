@@ -103,6 +103,52 @@ function parseFrontMatter(raw: string): { data: FrontMatter; body: string } {
   return { data, body };
 }
 
+interface ParsedPaper {
+  title: string;
+  year: string;
+  arxivId: string;
+  scholarCitationId: string;
+  url: string;
+  whyMarkdown: string;
+}
+
+/**
+ * Parses `content/favourite-papers.md`, whose shape is one `## <title>` per
+ * paper, immediately followed by any of the `year:`, `arxiv:`, `scholar:` and
+ * `url:` lines, then a blank line and the markdown saying why the paper is a
+ * favourite. Anything before the first `##` is the introduction shown above
+ * the list. The metadata lines must come straight after the title: the first
+ * line that is not one of them starts the body.
+ */
+function parseFavouritePapers(raw: string): { intro: string; papers: ParsedPaper[] } {
+  const sections = raw.split(/^## /m);
+  const intro = sections[0].trim();
+  const papers = sections.slice(1).map((section) => {
+    const lines = section.split('\n');
+    const paper: ParsedPaper = {
+      title: lines[0].trim(),
+      year: '',
+      arxivId: '',
+      scholarCitationId: '',
+      url: '',
+      whyMarkdown: '',
+    };
+    let i = 1;
+    for (; i < lines.length; i++) {
+      const match = lines[i].match(/^(year|arxiv|scholar|url):\s*(.*)$/);
+      if (!match) break;
+      const [, key, value] = match;
+      if (key === 'year') paper.year = value.trim();
+      else if (key === 'arxiv') paper.arxivId = value.trim();
+      else if (key === 'scholar') paper.scholarCitationId = value.trim();
+      else paper.url = value.trim();
+    }
+    paper.whyMarkdown = lines.slice(i).join('\n').trim();
+    return paper;
+  });
+  return { intro, papers };
+}
+
 function unquote(value: string): string {
   const trimmed = value.trim();
   if (
@@ -113,7 +159,6 @@ function unquote(value: string): string {
   }
   return trimmed;
 }
-
 
 /**
  * Loads an Angular environment file from Node.
@@ -174,6 +219,9 @@ async function main() {
     readFileSync(join(contentDir, 'profile.md'), 'utf8'),
   );
   const galleryIntro = readFileSync(join(contentDir, 'gallery-intro.md'), 'utf8').trim();
+  const { intro: papersIntro, papers } = parseFavouritePapers(
+    readFileSync(join(contentDir, 'favourite-papers.md'), 'utf8'),
+  );
   const profile = {
     name: (profileData['name'] as string) ?? '',
     tagline: (profileData['tagline'] as string) ?? '',
@@ -181,18 +229,31 @@ async function main() {
     photoUrl: (profileData['photoUrl'] as string) ?? '',
     galleryIntroMarkdown: galleryIntro,
     links: (profileData['links'] as { label: string; url: string }[]) ?? [],
+    scholarUserId: (profileData['scholarUserId'] as string) ?? '',
+    favouritePapersIntroMarkdown: papersIntro,
+    favouritePapers: papers,
     lastUpdated: now,
   };
 
   console.log(
     `Parsed ${concepts.length} concepts ` +
       `(${concepts.filter((c) => c.published).length} published, ` +
-      `${concepts.filter((c) => !c.published).length} draft) and the profile.`,
+      `${concepts.filter((c) => !c.published).length} draft), the profile, ` +
+      `and ${papers.length} favourite papers.`,
   );
   for (const c of concepts) {
     console.log(`  ${c.published ? ' ' : '*'} ${c.slug.padEnd(34)} ${c.title}`);
   }
   console.log('  (* = draft, visible only when signed in as an admin)');
+  for (const paper of papers) {
+    const handles = [
+      paper.arxivId && `arXiv:${paper.arxivId}`,
+      paper.scholarCitationId && `scholar:${paper.scholarCitationId}`,
+      paper.url,
+    ].filter(Boolean);
+    console.log(`  ${paper.year.padEnd(6)} ${paper.title}`);
+    console.log(`         ${handles.join('  ')}  (${paper.whyMarkdown.length} chars)`);
+  }
 
   if (dryRun) {
     console.log('\n--dry-run: nothing was written.');
@@ -222,12 +283,10 @@ async function main() {
  */
 async function writeViaRules(documents: { path: string; fields: Record<string, unknown> }[]) {
   const { initializeApp } = await import('firebase/app');
-  const { connectAuthEmulator, getAuth, signInWithEmailAndPassword } = await import(
-    'firebase/auth'
-  );
-  const { connectFirestoreEmulator, doc, getFirestore, setDoc } = await import(
-    'firebase/firestore'
-  );
+  const { connectAuthEmulator, getAuth, signInWithEmailAndPassword } =
+    await import('firebase/auth');
+  const { connectFirestoreEmulator, doc, getFirestore, setDoc } =
+    await import('firebase/firestore');
 
   const environment = await loadEnvironment(
     useEmulator
@@ -350,9 +409,7 @@ function toFirestoreValue(value: unknown): Record<string, unknown> {
   if (typeof value === 'number') {
     // Firestore distinguishes the two, and the REST form carries an integer as
     // a string. `order` is the only number here, but keep both paths honest.
-    return Number.isInteger(value)
-      ? { integerValue: String(value) }
-      : { doubleValue: value };
+    return Number.isInteger(value) ? { integerValue: String(value) } : { doubleValue: value };
   }
   if (Array.isArray(value)) {
     return { arrayValue: { values: value.map(toFirestoreValue) } };

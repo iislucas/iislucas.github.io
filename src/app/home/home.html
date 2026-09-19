@@ -44,6 +44,59 @@
 
     <app-markdown-viewer [markdown]="profile().bioMarkdown"></app-markdown-viewer>
 
+    @if (favouritePapers().length > 0) {
+      <section class="favourite-papers">
+        <div class="papers-heading">
+          <h2>Favourite papers</h2>
+          @if (scholarHref(); as href) {
+            <a class="tag-chip papers-scholar-link" [href]="href" target="_blank" rel="noopener">
+              all publications
+              <app-icon name="launch" width="0.9em" height="0.9em"></app-icon>
+            </a>
+          }
+        </div>
+        @if (profile().favouritePapersIntroMarkdown) {
+          <app-markdown-viewer
+            class="papers-intro"
+            [markdown]="profile().favouritePapersIntroMarkdown"
+          ></app-markdown-viewer>
+        }
+        <ul class="paper-list">
+          @for (entry of favouritePapers(); track $index) {
+            @let primary = entry.links[0];
+            <li class="paper">
+              <h3 class="paper-title">
+                @if (primary) {
+                  <a [href]="primary.url" target="_blank" rel="noopener">{{ entry.paper.title }}</a>
+                } @else {
+                  {{ entry.paper.title }}
+                }
+                @if (entry.paper.year) {
+                  <span class="paper-year">{{ entry.paper.year }}</span>
+                }
+              </h3>
+              @if (entry.links.length > 0) {
+                <div class="paper-links">
+                  @for (link of entry.links; track link.url) {
+                    <a class="tag-chip paper-link" [href]="link.url" target="_blank" rel="noopener">
+                      {{ link.label }}
+                      <app-icon name="launch" width="0.85em" height="0.85em"></app-icon>
+                    </a>
+                  }
+                </div>
+              }
+              @if (entry.paper.whyMarkdown) {
+                <app-markdown-viewer
+                  class="paper-why"
+                  [markdown]="entry.paper.whyMarkdown"
+                ></app-markdown-viewer>
+              }
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
     @if (previewConcepts().length > 0) {
       <section class="concepts-teaser">
         <div class="teaser-heading">
