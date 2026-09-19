@@ -20,7 +20,9 @@
     "test:once": "vitest run --no-color",
     "test:watch": "vitest --no-color",
     "emulator:start": "firebase emulators:start --only auth,firestore",
+    "deploy": "node scripts/check-env.mjs && firebase deploy --only firestore:rules,hosting",
     "deploy:rules": "firebase deploy --only firestore:rules",
+    "deploy:hosting": "node scripts/check-env.mjs && firebase deploy --only hosting",
     "seed": "node --experimental-strip-types scripts/seed-content.mts",
     "sync:markdown-editor": "node scripts/sync-markdown-editor.mjs",
     "format": "prettier --write \"src/**/*.{ts,html,scss}\""
