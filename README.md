@@ -47,7 +47,9 @@ rather than through a commit.
 ```bash
 pnpm run firebase:setup         # prepare a Google Cloud project to back the site
 pnpm run admin:add <email>      # grant someone edit access (admin:remove, admin:list)
-pnpm run deploy:rules           # deploy firestore.rules
+pnpm run deploy                 # build, then deploy firestore.rules and Firebase Hosting
+pnpm run deploy:rules           # deploy firestore.rules only
+pnpm run deploy:hosting         # build, then deploy Firebase Hosting only
 pnpm run seed                   # write content/ into Firestore (--dry-run to preview)
                                 # add --via-rules to write as a signed-in user instead
 
@@ -69,5 +71,7 @@ reports on both rather than pretending otherwise. See [SETUP.md](SETUP.md).
 ## Deployment
 
 Pushing to `main` builds and publishes to GitHub Pages
-(`.github/workflows/deploy-pages.yml`). Content edits do not need a deploy —
+(`.github/workflows/deploy-pages.yml`). `pnpm run deploy` publishes the
+Firestore rules and the site to Firebase Hosting from your machine. Content
+edits do not need a deploy —
 they are Firestore writes, live immediately.

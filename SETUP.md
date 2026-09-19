@@ -185,6 +185,23 @@ Setting `SEED_EMAIL` and `SEED_PASSWORD` selects this mode on its own.
 After seeding, edit in the app — Firestore is the source of truth from then on,
 and re-running the seed would overwrite your edits with the files.
 
+## Deploy to Firebase Hosting
+
+```bash
+pnpm run deploy
+```
+
+Builds the app, then deploys `firestore.rules` and the build to Firebase
+Hosting (`<project>.web.app`), using your `firebase login` and the project in
+`.firebaserc`. It refuses to start while `environment.local.ts` still holds
+`YOUR_*` placeholders, so it cannot publish a site with no Firebase behind it.
+`pnpm run deploy:hosting` does only the site; `pnpm run deploy:rules` only the
+rules.
+
+Hosting rewrites every path to `index.html`, so deep links work without the
+`404.html` trick GitHub Pages needs. `<project>.web.app` and
+`<project>.firebaseapp.com` are authorized for sign-in by default.
+
 ## Deploy to GitHub Pages
 
 `.github/workflows/deploy-pages.yml` builds and publishes on every push to
