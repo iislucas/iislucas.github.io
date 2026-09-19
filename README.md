@@ -27,8 +27,11 @@ rather than through a commit.
 - **Firebase, used directly** — the `firebase` SDK, not `@angular/fire`. Auth
   and Firestore only; no Cloud Functions, no server.
 - **Authorization is one document.** `acl/<email>` with `isAdmin: true` makes an
-  account an admin. `firestore.rules` is the enforcement; the UI hiding edit
-  buttons is only a courtesy.
+  account an admin, managed with `pnpm run admin:add|remove|list`.
+  `firestore.rules` is the enforcement; the UI hiding edit buttons is only a
+  courtesy. The rules forbid writing to `acl` from the client entirely, so the
+  web app cannot grant admin to anyone — those commands go through the REST API
+  with your own Google credentials.
 - **Drafts are enforced, not hidden.** A concept with `published: false` is
   unreadable to anyone but an admin, at the rules level — the client cannot
   fetch it to hide it.
@@ -42,16 +45,23 @@ rather than through a commit.
 ## Commands
 
 ```bash
+pnpm run firebase:setup         # prepare a Google Cloud project to back the site
+pnpm run admin:add <email>      # grant someone edit access (admin:remove, admin:list)
+pnpm run deploy:rules           # deploy firestore.rules
+pnpm run seed                   # write content/ into Firestore (--dry-run to preview)
+
 pnpm start                      # dev server against your Firebase project
 pnpm run start:emulator         # dev server against local emulators
 pnpm run emulator:start         # the Firebase emulators
 pnpm test                       # unit tests (vitest)
 pnpm run build                  # production build into dist/
-pnpm run seed -- --dry-run      # show what seeding would write
-pnpm run seed                   # write content/ into Firestore
-pnpm run deploy:rules           # deploy firestore.rules
 pnpm run sync:markdown-editor   # refresh the vendored editor from upstream
 ```
+
+`firebase:setup` and the `admin:*` commands drive the Firebase and Firestore
+REST APIs with the credentials from `gcloud auth login`, so setting up a
+project and granting access are both scripted rather than done by clicking
+through the console.
 
 ## Deployment
 

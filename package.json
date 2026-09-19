@@ -6,6 +6,10 @@
   "scripts": {
     "ng": "ng",
     "setup:env": "node scripts/setup-env.mjs",
+    "firebase:setup": "node scripts/setup-firebase.mjs",
+    "admin:add": "node scripts/set-admin.mjs add",
+    "admin:remove": "node scripts/set-admin.mjs remove",
+    "admin:list": "node scripts/set-admin.mjs list",
     "prestart": "pnpm run setup:env",
     "start": "ng serve",
     "start:emulator": "ng serve --configuration emulator",
