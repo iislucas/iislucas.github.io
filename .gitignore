@@ -25,6 +25,9 @@ Thumbs.db
 # Environment files (your real Firebase web config; see SETUP.md)
 src/environments/environment.local.ts
 
+# Auto-generated build stamp (scripts/stamp-version.mjs)
+src/app/version.ts
+
 # Firebase
 .firebase/
 .firebaserc

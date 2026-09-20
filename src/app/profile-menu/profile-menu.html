@@ -32,6 +32,27 @@
 
         <div class="menu-divider"></div>
 
+        <div class="menu-section-label">Appearance</div>
+        @for (option of themes.options; track option.id) {
+          <button
+            class="menu-link menu-button theme-option"
+            [class.active]="themes.theme() === option.id"
+            [attr.aria-pressed]="themes.theme() === option.id"
+            (click)="selectTheme(option.id)"
+          >
+            <span class="theme-swatch" [attr.data-theme-preview]="option.id"></span>
+            <span class="theme-text">
+              <span class="theme-label">{{ option.label }}</span>
+              <span class="theme-description">{{ option.description }}</span>
+            </span>
+            @if (themes.theme() === option.id) {
+              <app-icon name="check" width="18px" height="18px"></app-icon>
+            }
+          </button>
+        }
+
+        <div class="menu-divider"></div>
+
         <button class="menu-link menu-button" (click)="logout()">
           <app-icon name="logout" width="20px" height="20px"></app-icon>
           Sign out

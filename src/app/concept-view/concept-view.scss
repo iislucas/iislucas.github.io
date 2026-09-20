@@ -6,24 +6,6 @@
   max-width: 720px;
 }
 
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3em;
-  font-size: 0.9em;
-  text-decoration: none;
-  color: $text-secondary;
-  margin-bottom: 1.25em;
-
-  app-icon {
-    fill: currentColor;
-  }
-
-  &:hover {
-    color: $heading-accent-color;
-  }
-}
-
 .concept-header {
   margin-bottom: 1.5em;
   padding-bottom: 1.25em;

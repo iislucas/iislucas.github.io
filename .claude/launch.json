@@ -2,6 +2,12 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "site",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["run", "start", "--port", "4300"],
+      "port": 4300
+    },
+    {
       "name": "site-emulator",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["run", "start:emulator", "--port", "4200"],

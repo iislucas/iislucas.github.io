@@ -100,10 +100,6 @@ export class HomeComponent {
       .slice(0, PREVIEW_COUNT),
   );
 
-  protected hasMoreConcepts = computed(
-    () => this.content.concepts().filter((c) => c.published).length > PREVIEW_COUNT,
-  );
-
   /** The favourite papers, each paired with the links it resolves to, so that
    * the template never has to work a link out for itself. */
   protected favouritePapers = computed(() => {

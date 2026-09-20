@@ -1,0 +1,401 @@
+// ============================================================================
+//  Themes
+//
+//  Every colour and typographic choice that varies between the site's looks
+//  lives in the `$themes` map below, and nowhere else. Each entry becomes a
+//  block of CSS custom properties selected by `data-theme` on <html>, which
+//  ThemeService sets (see src/app/theme/theme.service.ts).
+//
+//  scss_variables.scss maps the project's SCSS variable names onto these
+//  properties, so components keep using `$text-primary`, `$header-bg-color`
+//  and friends and pick up the active theme for free.
+//
+//  To add a theme: add an entry here and a matching id to the `Theme` enum in
+//  src/app/theme/theme.ts. Every entry must define the full set of keys — a
+//  missing key is simply an unset property, not an inherited one.
+//
+//  The shared shape of all of them: a bluish-slate nav bar over a distinctly
+//  darker rule, a white page, one blue-ish accent, and a lighter tint of that
+//  accent for selection and hover. They differ in how light and how warm the
+//  bar is, which way the accent leans, how much air the text gets, and how
+//  round the corners are.
+// ============================================================================
+
+@use 'sass:map';
+
+// Emitted on bare `:root` as well, so a visitor who has never chosen gets it.
+// Must match DEFAULT_THEME in src/app/theme/theme.ts.
+$default-theme: 'mist';
+
+// The three font stacks the themes draw on. All system fonts: nothing here
+// waits on a webfont before the first paint.
+$font-geometric: (
+  'Avenir Next',
+  Avenir,
+  ui-sans-serif,
+  system-ui,
+  'Segoe UI',
+  Helvetica,
+  Arial,
+  sans-serif
+);
+$font-system: (
+  ui-sans-serif,
+  system-ui,
+  -apple-system,
+  'Segoe UI',
+  Roboto,
+  Helvetica,
+  Arial,
+  sans-serif
+);
+$font-grotesque: ('Helvetica Neue', Helvetica, Arial, sans-serif);
+
+$themes: (
+  // --------------------------------------------------------------------------
+  //  Slate — the default. A lighter slate bar sitting on a dark slate rule,
+  //  so the chrome reads as one calm band rather than a hard black edge, with
+  //  the deep blue accent and the geometric font.
+  // --------------------------------------------------------------------------
+  'slate': (
+      chrome-bg: #55677d,
+      chrome-text: #f6f8fa,
+      chrome-muted-text: rgba(255, 255, 255, 0.72),
+      chrome-rule: #1f2933,
+      chrome-rule-width: 3px,
+      chrome-hover-bg: rgba(255, 255, 255, 0.14),
+      chrome-active-bg: rgba(255, 255, 255, 0.22),
+      page-bg: #ffffff,
+      surface-bg: #ffffff,
+      surface-border: #d8dee6,
+      separator-bg: #f5f7f9,
+
+      accent: #20558a,
+      accent-hover: #1a4571,
+      accent-active: #143756,
+      accent-glow: rgba(32, 85, 138, 0.16),
+      highlight-bg: #eaf2fb,
+      highlight-bg-strong: #dce9f7,
+      highlight-border: #b7d3ef,
+      highlight-text: #1a4571,
+
+      text-primary: #1a1e23,
+      text-secondary: #4e565f,
+      text-muted: #78818b,
+      text-placeholder: #a6aeb7,
+
+      button-bg: #f4f6f8,
+      button-text: #1a1e23,
+      button-hover-bg: #e6eaef,
+      button-active-bg: #d7dde4,
+
+      font-body: $font-geometric,
+      font-size-base: 15.5px,
+      line-height-base: 1.7,
+      radius-sm: 4px,
+      radius-card: 6px,
+    ),
+
+  // --------------------------------------------------------------------------
+  //  Pewter — the same idea run warmer and greyer: the bar loses most of its
+  //  blue, the rule is charcoal, and the accent is a softer steel.
+  // --------------------------------------------------------------------------
+  'pewter': (
+      chrome-bg: #6b7583,
+      chrome-text: #f8f9fa,
+      chrome-muted-text: rgba(255, 255, 255, 0.74),
+      chrome-rule: #2f353d,
+      chrome-rule-width: 3px,
+      chrome-hover-bg: rgba(255, 255, 255, 0.15),
+      chrome-active-bg: rgba(255, 255, 255, 0.24),
+      page-bg: #ffffff,
+      surface-bg: #ffffff,
+      surface-border: #dcdfe4,
+      separator-bg: #f6f7f9,
+
+      accent: #3f6d91,
+      accent-hover: #345a78,
+      accent-active: #2a4a63,
+      accent-glow: rgba(63, 109, 145, 0.16),
+      highlight-bg: #edf3f8,
+      highlight-bg-strong: #dfeaf3,
+      highlight-border: #bfd8e8,
+      highlight-text: #345a78,
+
+      text-primary: #20252b,
+      text-secondary: #545c66,
+      text-muted: #7d858f,
+      text-placeholder: #aab1b9,
+
+      button-bg: #f5f6f8,
+      button-text: #20252b,
+      button-hover-bg: #e8eaee,
+      button-active-bg: #d9dce2,
+
+      font-body: $font-geometric,
+      font-size-base: 15.5px,
+      line-height-base: 1.72,
+      radius-sm: 5px,
+      radius-card: 8px,
+    ),
+
+  // --------------------------------------------------------------------------
+  //  Dusk — the slate pushed towards violet, over a deep indigo rule, with an
+  //  indigo accent. The warmest of the blues without leaving the family.
+  // --------------------------------------------------------------------------
+  'dusk': (
+      chrome-bg: #5f6a86,
+      chrome-text: #f7f8fc,
+      chrome-muted-text: rgba(255, 255, 255, 0.73),
+      chrome-rule: #262d3f,
+      chrome-rule-width: 3px,
+      chrome-hover-bg: rgba(255, 255, 255, 0.14),
+      chrome-active-bg: rgba(255, 255, 255, 0.22),
+      page-bg: #ffffff,
+      surface-bg: #ffffff,
+      surface-border: #d9dce7,
+      separator-bg: #f6f7fb,
+
+      accent: #3c4f8a,
+      accent-hover: #314172,
+      accent-active: #27345c,
+      accent-glow: rgba(60, 79, 138, 0.16),
+      highlight-bg: #eef0fa,
+      highlight-bg-strong: #e0e4f4,
+      highlight-border: #c3cbec,
+      highlight-text: #314172,
+
+      text-primary: #1d2028,
+      text-secondary: #505666,
+      text-muted: #7a8090,
+      text-placeholder: #a8adba,
+
+      button-bg: #f5f6fa,
+      button-text: #1d2028,
+      button-hover-bg: #e8eaf2,
+      button-active-bg: #d9dce8,
+
+      font-body: $font-geometric,
+      font-size-base: 15.5px,
+      line-height-base: 1.72,
+      radius-sm: 6px,
+      radius-card: 10px,
+    ),
+
+  // --------------------------------------------------------------------------
+  //  Tide — a slate with a green cast in the bar and a teal accent: the one
+  //  scheme whose highlight is not blue, for when the blue starts to feel
+  //  uniform.
+  // --------------------------------------------------------------------------
+  'tide': (
+      chrome-bg: #566a76,
+      chrome-text: #f5f9fa,
+      chrome-muted-text: rgba(255, 255, 255, 0.73),
+      chrome-rule: #1e2b30,
+      chrome-rule-width: 3px,
+      chrome-hover-bg: rgba(255, 255, 255, 0.14),
+      chrome-active-bg: rgba(255, 255, 255, 0.22),
+      page-bg: #ffffff,
+      surface-bg: #ffffff,
+      surface-border: #d5dee0,
+      separator-bg: #f4f8f8,
+
+      accent: #1f6f7a,
+      accent-hover: #185b64,
+      accent-active: #12484f,
+      accent-glow: rgba(31, 111, 122, 0.16),
+      highlight-bg: #e5f3f4,
+      highlight-bg-strong: #d3eaec,
+      highlight-border: #a8d8dd,
+      highlight-text: #17575f,
+
+      text-primary: #182126,
+      text-secondary: #4a565b,
+      text-muted: #758186,
+      text-placeholder: #a3aeb2,
+
+      button-bg: #f3f7f7,
+      button-text: #182126,
+      button-hover-bg: #e4eded,
+      button-active-bg: #d4e0e1,
+
+      font-body: $font-geometric,
+      font-size-base: 15.5px,
+      line-height-base: 1.7,
+      radius-sm: 4px,
+      radius-card: 6px,
+    ),
+
+  // --------------------------------------------------------------------------
+  //  Harbor — the bluest: a navy-leaning bar and a brighter azure accent.
+  // --------------------------------------------------------------------------
+  'harbor': (
+      chrome-bg: #3f5d7a,
+      chrome-text: #f1f6fa,
+      chrome-muted-text: rgba(255, 255, 255, 0.72),
+      chrome-rule: #16303f,
+      chrome-rule-width: 3px,
+      chrome-hover-bg: rgba(255, 255, 255, 0.13),
+      chrome-active-bg: rgba(255, 255, 255, 0.21),
+      page-bg: #ffffff,
+      surface-bg: #ffffff,
+      surface-border: #d3dde5,
+      separator-bg: #f2f6f9,
+
+      accent: #0b6ea8,
+      accent-hover: #095a8a,
+      accent-active: #07486e,
+      accent-glow: rgba(11, 110, 168, 0.18),
+      highlight-bg: #e4f2fa,
+      highlight-bg-strong: #d1e8f6,
+      highlight-border: #9fd3ee,
+      highlight-text: #075e8f,
+
+      text-primary: #16212b,
+      text-secondary: #4a5764,
+      text-muted: #74828f,
+      text-placeholder: #a2adb8,
+
+      button-bg: #f3f7fa,
+      button-text: #16212b,
+      button-hover-bg: #e4ecf2,
+      button-active-bg: #d4dfe8,
+
+      font-body: $font-geometric,
+      font-size-base: 15.5px,
+      line-height-base: 1.75,
+      radius-sm: 5px,
+      radius-card: 8px,
+    ),
+
+  // --------------------------------------------------------------------------
+  //  Ink — higher contrast and squared off: a dark, barely-blue bar over a
+  //  solid black rule, a classic grotesque, tighter lines, sharp corners.
+  // --------------------------------------------------------------------------
+  'ink': (
+      chrome-bg: #26313e,
+      chrome-text: #eef2f6,
+      chrome-muted-text: rgba(255, 255, 255, 0.68),
+      chrome-rule: #000000,
+      chrome-rule-width: 4px,
+      chrome-hover-bg: rgba(255, 255, 255, 0.1),
+      chrome-active-bg: rgba(255, 255, 255, 0.18),
+      page-bg: #ffffff,
+      surface-bg: #ffffff,
+      surface-border: #ced6de,
+      separator-bg: #f3f5f7,
+
+      accent: #0f4c81,
+      accent-hover: #0b3c67,
+      accent-active: #082e4f,
+      accent-glow: rgba(15, 76, 129, 0.18),
+      highlight-bg: #e6f0f9,
+      highlight-bg-strong: #d5e6f4,
+      highlight-border: #9cc6e8,
+      highlight-text: #0b3c67,
+
+      text-primary: #101418,
+      text-secondary: #464e57,
+      text-muted: #6f7883,
+      text-placeholder: #9aa3ad,
+
+      button-bg: #f2f4f6,
+      button-text: #101418,
+      button-hover-bg: #e3e7eb,
+      button-active-bg: #d3d9df,
+
+      font-body: $font-grotesque,
+      font-size-base: 15px,
+      line-height-base: 1.65,
+      radius-sm: 2px,
+      radius-card: 2px,
+    ),
+
+  // --------------------------------------------------------------------------
+  //  Mist — the airy one: the lightest bar, a faintly cool off-white page, the
+  //  most line spacing and the softest edges.
+  // --------------------------------------------------------------------------
+  'mist': (
+      chrome-bg: #728699,
+      chrome-text: #f8fafc,
+      chrome-muted-text: rgba(255, 255, 255, 0.78),
+      chrome-rule: #b7c6d4,
+      chrome-rule-width: 3px,
+      chrome-hover-bg: rgba(255, 255, 255, 0.16),
+      chrome-active-bg: rgba(255, 255, 255, 0.26),
+      page-bg: #fcfdfe,
+      surface-bg: #ffffff,
+      surface-border: #dde4ea,
+      separator-bg: #f4f7fa,
+
+      accent: #3a7ca5,
+      accent-hover: #2f6786,
+      accent-active: #26536c,
+      accent-glow: rgba(58, 124, 165, 0.16),
+      highlight-bg: #eef5fa,
+      highlight-bg-strong: #dfecf5,
+      highlight-border: #c5dced,
+      highlight-text: #2f6786,
+
+      text-primary: #232b33,
+      text-secondary: #5a6570,
+      text-muted: #838e99,
+      text-placeholder: #aab3bc,
+
+      button-bg: #f6f8fa,
+      button-text: #232b33,
+      button-hover-bg: #eaeff4,
+      button-active-bg: #dce3ea,
+
+      font-body: $font-system,
+      font-size-base: 15px,
+      line-height-base: 1.85,
+      radius-sm: 6px,
+      radius-card: 10px,
+    )
+);
+
+// Each theme's properties, plus the default theme's on bare :root.
+@each $name, $properties in $themes {
+  @if $name == $default-theme {
+    :root,
+    :root[data-theme='#{$name}'] {
+      @each $key, $value in $properties {
+        --#{$key}: #{$value};
+      }
+    }
+  } @else {
+    :root[data-theme='#{$name}'] {
+      @each $key, $value in $properties {
+        --#{$key}: #{$value};
+      }
+    }
+  }
+}
+
+// The little two-tone square beside each entry in the appearance picker. It is
+// generated from the same map so a theme can never be listed with the wrong
+// colours: the top-left half is the nav bar, the bottom-right is the accent,
+// and the outline is the rule under the nav bar.
+.theme-swatch {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+@each $name, $properties in $themes {
+  .theme-swatch[data-theme-preview='#{$name}'] {
+    background: linear-gradient(
+      135deg,
+      #{map.get($properties, chrome-bg)} 0%,
+      #{map.get($properties, chrome-bg)} 50%,
+      #{map.get($properties, accent)} 50%,
+      #{map.get($properties, accent)} 100%
+    );
+    border: 1px solid #{map.get($properties, chrome-rule)};
+    border-radius: #{map.get($properties, radius-sm)};
+  }
+}

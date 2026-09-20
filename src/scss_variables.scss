@@ -1,48 +1,81 @@
 // ============================================================================
+//  Site Variables
+//
+//  Most of these are not values but pointers: they resolve to the CSS custom
+//  properties defined in scss_themes.scss, so that switching `data-theme` on
+//  <html> restyles the whole site at runtime. Components keep using the names
+//  below and never need to know a theme exists.
+//
+//  The handful of variables still holding a literal colour are marked; they
+//  are the ones passed to Sass colour functions somewhere in the tree, which
+//  only works on a real colour, not on a `var()` reference.
+// ============================================================================
+
+// ============================================================================
 //  Text Colors
 //  Used for headings, body copy, labels, and metadata throughout the app.
 // ============================================================================
-$text-primary: #18181b; // Deep black / near-black — main body text, primary titles
-$text-secondary: #52525b; // Charcoal gray — labels, descriptions, secondary text
-$text-muted: #71717a; // Medium neutral gray — timestamps, metadata
-$text-placeholder: #a1a1aa; // Light neutral gray — placeholders, search icons
+$text-primary: var(--text-primary); // Main body text, primary titles
+$text-secondary: var(--text-secondary); // Labels, descriptions, secondary text
+$text-muted: var(--text-muted); // Timestamps, metadata
+$text-placeholder: var(--text-placeholder); // Placeholders, search icons
+
+// ============================================================================
+//  Typography
+// ============================================================================
+$font-body: var(--font-body); // The site's one font stack
+$font-size-base: var(--font-size-base); // Set on <body>; everything else is relative
+$line-height-base: var(--line-height-base); // Inherited by all body copy
 
 // ============================================================================
 //  Border & Separator Colors
-//  Used for input borders, card outlines, dividers, and section separators.
+//
+//  LITERAL: $border-color-light and $theme-chip-border-color are passed to
+//  color.adjust() by the vendored markdown editor (src/app/markdown-editor,
+//  overwritten by `pnpm run sync:markdown-editor`), so they cannot become
+//  var() references. A neutral light grey reads correctly under every theme.
 // ============================================================================
-$border-color-light: #e4e4e7; // Clean neutral borders on inputs, cards, menus, and dividers
-$separator-color: #f4f4f5; // Subtle separators between list items, sections, and backgrounds
+$border-color-light: #e0e4e9; // Input borders, card outlines, menus, dividers
+$separator-color: var(--separator-bg); // Subtle section and list separators
 
 // ============================================================================
 //  Brand / Theme Colors
-//
-//  This palette is the one place to change the site's look. The structure is
-//  inherited from ilc-members-manager (so the shared components keep working);
-//  the values are this site's own — a slate-ink chrome with a single deep blue
-//  accent, rather than that project's grey-and-red branding.
 // ============================================================================
-$theme-bg-color: #ffffff; // Card, panel, and content background
-$theme-border-color: #1f2933; // Card outlines and active borders
-$theme-heading-color-subtle: #272727; // Form section heading text
-$heading-accent-color: #1b4965; // Deep blue accent — links, headings, primary buttons
-$brand-accent: #1b4965; // Alias of the accent, for styles that name the brand directly
-$brand-red: $brand-accent; // Back-compat alias for components carried over from ilc-members-manager
+$theme-bg-color: var(--surface-bg); // Card, panel, and content background
+$surface-border: var(--surface-border); // Light outline around cards and panels
+$page-bg-color: var(--page-bg); // The page behind the content
+$theme-border-color: var(--chrome-bg); // Card outlines and active borders
+$theme-heading-color-subtle: var(--text-primary); // Form section heading text
+$heading-accent-color: var(--accent); // Links, headings, primary buttons
+$accent-hover-color: var(--accent-hover); // Accent under the pointer
+$accent-active-color: var(--accent-active); // Accent while pressed
+$brand-accent: var(--accent); // Alias, for styles that name the brand directly
+$brand-red: var(--accent); // Back-compat alias (ilc-members-manager components)
 
-// Header & Footer: dark slate with a lighter rule and white text.
-$header-bg-color: #1f2933;
-$header-text-color: #fff;
-$header-border-color: #1b4965;
-$footer-bg-color: #1f2933;
-$footer-text-color: #fff;
-$footer-border-color: #1b4965;
+// Header & Footer: the dark chrome, and the rule that separates it from the page.
+$header-bg-color: var(--chrome-bg);
+$header-text-color: var(--chrome-text);
+$header-muted-text: var(--chrome-muted-text); // Breadcrumb trail above the page title
+$header-border-color: var(--chrome-rule);
+$header-border-width: var(--chrome-rule-width);
+$header-hover-bg: var(--chrome-hover-bg); // Nav link under the pointer
+$header-active-bg: var(--chrome-active-bg); // The nav link of the current page
+$footer-bg-color: var(--chrome-bg);
+$footer-text-color: var(--chrome-text);
+$footer-border-color: var(--chrome-rule);
+
+// ============================================================================
+//  Corner Radii
+// ============================================================================
+$radius-sm: var(--radius-sm); // Buttons, chips, menu items
+$radius-card: var(--radius-card); // Cards and panels
 
 // ============================================================================
 //  Interactive / Focus Colors
 // ============================================================================
-$focus-ring-color: #1b4965; // Focus ring on search inputs and active tags
-$input-focus-border: #71717a; // Neutral charcoal border on focus so it doesn't look like an error
-$input-focus-glow: rgba(27, 73, 101, 0.15); // Brand-tinted soft focus glow
+$focus-ring-color: var(--accent); // Focus ring on search inputs and active tags
+$input-focus-border: var(--text-muted); // Neutral border on focus, so it doesn't read as an error
+$input-focus-glow: var(--accent-glow); // Accent-tinted soft focus glow
 
 @mixin input-focus-ring($border-color: $input-focus-border, $glow: $input-focus-glow) {
   outline: none;
@@ -51,15 +84,17 @@ $input-focus-glow: rgba(27, 73, 101, 0.15); // Brand-tinted soft focus glow
 }
 
 // ============================================================================
-//  Button Colors (Monochrome Yin/Yang with Dark Borders)
+//  Button Colors (Neutral surface with a dark border)
 //  Base styling for all <button> elements. See styles.scss for variants
 //  like .icon-only-button, .delete-button, .subtle-button, etc.
 // ============================================================================
-$button-bg-color: #f4f4f5;
-$button-border-color: #27272a;
-$button-text-color: #18181b;
-$button-hover-bg-color: #e4e4e7;
-$button-active-bg-color: #d4d4d8;
+$button-bg-color: var(--button-bg);
+// The nav bar's colour, so a button's outline belongs to the same family as
+// the site's chrome rather than being a separate near-black.
+$button-border-color: var(--chrome-bg);
+$button-text-color: var(--button-text);
+$button-hover-bg-color: var(--button-hover-bg);
+$button-active-bg-color: var(--button-active-bg);
 $shadow-color: transparent;
 $shadow-color-hover: transparent;
 $shadow-color-active: transparent;
@@ -76,27 +111,30 @@ $modal-max-height: 90vh;
 // ============================================================================
 //  Chip Colors
 //  Used for .level-chip, .identifier-chip, .email-chip (clean neutral)
-//  and .tag-chip (light blue tag tint). See styles.scss for all chip classes.
+//  and .tag-chip (light accent tint). See styles.scss for all chip classes.
 // ============================================================================
-$theme-chip-bg-color: #f4f4f5;
-$theme-chip-border-color: #d4d4d8;
+$theme-chip-bg-color: var(--separator-bg);
+$theme-chip-border-color: #d6dae0; // LITERAL: see the note on $border-color-light
 
-$theme-tag-bg-color: #e0f2fe;
-$theme-tag-border-color: #7dd3fc;
+$theme-tag-bg-color: var(--highlight-bg);
+$theme-tag-border-color: var(--highlight-border);
 
-// Highlight badges, active chips & stage checkmarks (Light blue bg with medium blue border)
-$highlight-tag-bg: #e0f2fe;
-$highlight-tag-border: #7dd3fc;
-$highlight-tag-text: #0369a1;
+// Highlight badges, active chips & stage checkmarks (the theme's lighter blue)
+$highlight-tag-bg: var(--highlight-bg);
+$highlight-tag-border: var(--highlight-border);
+$highlight-tag-text: var(--highlight-text);
 
 // ============================================================================
 //  Menu Colors
 // ============================================================================
-$menu-item-hover-color: #f0f7ff;
-$menu-sep-color: #e4e4e7;
+$menu-item-hover-color: var(--highlight-bg);
+$menu-item-active-color: var(--highlight-bg-strong); // Menu item while pressed
+$menu-sep-color: $border-color-light;
 
 // ============================================================================
 //  Error Colors (Red Accent)
+//  Deliberately outside the theme system: an error should look the same, and
+//  look like an error, whichever theme the site is in.
 // ============================================================================
 $theme-error-text-color: #991b1b;
 $theme-error-bg-color: #fef2f2;
@@ -110,12 +148,13 @@ $max-main-width: 900px; // Default max-width for centered page containers
 $card-padding: 10px;
 $card-sep: 0.75em;
 
-// List styling (Selection / active item highlights — red left-border with light grey background)
-$row-border-color: #e4e4e7;
-$row-highlight-bg: #f4f4f5;
-$row-highlight-border: #1b4965;
-$table-row-selected: #f4f4f5;
-$primary-color: #1b4965;
+// List styling (selection / active item highlights — accent left border with a
+// light tinted background)
+$row-border-color: $border-color-light;
+$row-highlight-bg: var(--highlight-bg);
+$row-highlight-border: var(--accent);
+$table-row-selected: var(--highlight-bg);
+$primary-color: var(--accent);
 
 @mixin row-highlight-base {
   border-left: 4px solid transparent;
@@ -135,9 +174,9 @@ $primary-color: #1b4965;
 //  dashed outline on hover, and a solid accent outline with a light tint when
 //  it is selected or open. Kept subtle: the page should still read as itself.
 // ============================================================================
-$edit-hover-outline: #a1a1aa;
-$edit-selected-outline: #1b4965;
-$edit-selected-bg: #f0f7ff;
+$edit-hover-outline: var(--text-placeholder);
+$edit-selected-outline: var(--accent);
+$edit-selected-bg: var(--highlight-bg);
 $edit-banner-bg: #fff8e1;
 $edit-banner-border: #f0c36d;
 

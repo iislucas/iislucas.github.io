@@ -1,73 +1,181 @@
 @use '../../scss_variables' as *;
+@use '../../styles' as *;
 
 .nav-bar {
   display: flex;
   align-items: center;
-  gap: 1em;
-  padding: 0.6em 1em;
+  gap: 0.75em;
+  padding: 0.5em 1em;
+  min-height: 3em;
   background-color: $header-bg-color;
   color: $header-text-color;
-  border-bottom: 3px solid $header-border-color;
+  border-bottom: $header-border-width solid $header-border-color;
   box-sizing: border-box;
 }
 
-.site-title {
-  display: flex;
+// The menu button and the back button: same shape, same place, so the left of
+// the bar reads as one group of controls.
+.header-icon-btn {
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0.25em;
+  border: none;
+  border-radius: $radius-sm;
+  background-color: transparent;
+  box-shadow: none;
   color: $header-text-color;
   text-decoration: none;
-  font-weight: 600;
-  font-size: 1.05em;
-  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
 
-  &:hover {
-    color: $header-text-color;
-    opacity: 0.85;
-  }
-}
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 0.25em;
-  flex-grow: 1;
-  overflow-x: auto;
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-.nav-link {
-  color: $header-text-color;
-  text-decoration: none;
-  padding: 0.35em 0.7em;
-  border-radius: 0.3em;
-  white-space: nowrap;
-  opacity: 0.85;
-  transition:
-    background-color 0.15s ease,
-    opacity 0.15s ease;
-
-  &:hover {
-    color: $header-text-color;
-    background-color: rgba(255, 255, 255, 0.12);
-    opacity: 1;
+  app-icon {
+    fill: currentColor;
   }
 
+  &:hover,
   &.active {
+    color: $header-text-color;
+    background-color: $header-hover-bg;
+    box-shadow: none;
+  }
+
+  &:active {
+    transform: none;
+    background-color: $header-active-bg;
+  }
+}
+
+// Anchors the dropdown to the button rather than to the bar.
+.menu-anchor {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+// The site's navigation. Uses the global .menu-style / .menu-item / .menu-overlay
+// classes, so it matches the profile menu without restating any of it.
+.nav-dropdown {
+  // .menu-style brings its own z-index, which is above the global
+  // .menu-overlay's. Do not set one here: a lower value puts the overlay in
+  // front and swallows the clicks meant for these links.
+  @extend .menu-style;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 13em;
+}
+
+.title-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+// The trail animates in and out by growing a grid row from 0fr to 1fr, so the
+// bar changes height smoothly instead of snapping between one and two lines.
+.breadcrumbs-accordion {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 0.25s cubic-bezier(0.2, 0, 0, 1),
+    opacity 0.2s cubic-bezier(0.2, 0, 0, 1);
+
+  &.open {
+    grid-template-rows: 1fr;
     opacity: 1;
-    font-weight: 600;
-    background-color: rgba(255, 255, 255, 0.18);
+  }
+}
+
+.breadcrumbs-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.breadcrumb-parents {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75em;
+  line-height: 1.4;
+  color: $header-muted-text;
+}
+
+.crumb {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.crumb-link {
+  color: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &:hover {
+    color: $header-text-color;
+    text-decoration: underline;
+  }
+}
+
+.crumb-separator {
+  margin: 0 0.4em;
+  opacity: 0.7;
+}
+
+.page-title {
+  font-size: 1.35em;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  color: $header-text-color;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Stands in for a title that is still being fetched, so the bar does not show
+// the slug for a moment and then swap it for the real name.
+.title-placeholder {
+  display: inline-block;
+  width: 9em;
+  max-width: 100%;
+  height: 0.85em;
+  vertical-align: middle;
+  border-radius: $radius-sm;
+  background: linear-gradient(
+    90deg,
+    $header-hover-bg 25%,
+    $header-active-bg 50%,
+    $header-hover-bg 75%
+  );
+  background-size: 200% 100%;
+  animation: titleShimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes titleShimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
   }
 }
 
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 0.6em;
-  margin-left: auto;
+  justify-content: flex-end;
+  gap: 0.5em;
+  flex-shrink: 0;
 }
 
 .nav-edit-toggle {
@@ -76,8 +184,8 @@
   gap: 0.35em;
   color: $header-text-color;
   background-color: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 0.3em;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: $radius-sm;
   padding: 0.3em 0.6em;
   font-size: 0.9em;
   opacity: 1;
@@ -86,7 +194,7 @@
 
   &:hover {
     color: $header-text-color;
-    background-color: rgba(255, 255, 255, 0.15);
+    background-color: $header-hover-bg;
   }
 
   &.active,
@@ -97,28 +205,26 @@
   }
 }
 
-.short-label {
-  display: none;
-}
-
-// On a phone: shorter tab names and an icon-only edit toggle, so the title,
-// both tabs and the avatar fit on one line at 360px.
+// On a phone: an icon-only edit toggle, so the menu button, the trail and the
+// avatar still fit on one line at 360px.
 @media (max-width: 600px) {
   .nav-bar {
     gap: 0.4em;
-    padding: 0.5em 0.6em;
+    padding: 0.4em 0.6em;
   }
 
-  .nav-link {
-    padding: 0.35em 0.5em;
-  }
-
-  .long-label,
   .nav-edit-toggle .label {
     display: none;
   }
 
-  .short-label {
-    display: inline;
+  .page-title {
+    font-size: 1.15em;
+  }
+
+  // The trail is one line of small text; let it scroll rather than wrap the
+  // bar onto a third line.
+  .breadcrumb-parents {
+    flex-wrap: nowrap;
+    overflow: hidden;
   }
 }

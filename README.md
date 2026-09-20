@@ -66,6 +66,7 @@ pnpm run start:emulator         # dev server against local emulators
 pnpm run emulator:start         # the Firebase emulators
 pnpm test                       # unit tests (vitest)
 pnpm run build                  # production build into dist/
+pnpm run stamp-version          # regenerate src/app/version.ts (runs on its own)
 pnpm run sync:markdown-editor   # refresh the vendored editor from upstream
 ```
 
@@ -81,3 +82,12 @@ reports on both rather than pretending otherwise. See [SETUP.md](SETUP.md).
 `pnpm run deploy` builds, then publishes the Firestore rules and the site to
 Firebase Hosting from your machine. Content edits do not need a deploy — they
 are Firestore writes, live immediately.
+
+Every build stamps a version into `src/app/version.ts`, which the footer shows
+as `v0.0.1+2026-09-20T08:25`: the `version` field from `package.json` plus the
+UTC build time. The timestamp is the useful half — it says which build is
+live, which a hand-bumped number on its own does not. The file is generated
+(and gitignored), `start`, `build` and `test` each regenerate it first, and
+Firebase Hosting runs `pnpm run build` as its predeploy step, so what is
+deployed always carries a fresh stamp. Bump the `version` field in
+`package.json` by hand when a release deserves a new number.
