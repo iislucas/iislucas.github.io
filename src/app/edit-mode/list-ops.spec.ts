@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { insertAt, moveItem, removeAt, replaceAt } from './list-ops';
+import { insertAt, moveItem, moveTo, positionForDropSlot, removeAt, replaceAt } from './list-ops';
 
 describe('moveItem', () => {
   it('moves an item up and down', () => {
@@ -47,5 +47,69 @@ describe('removeAt / replaceAt', () => {
   it('leaves the list alone for a stale index', () => {
     expect(removeAt(['a'], 3)).toEqual(['a']);
     expect(replaceAt(['a'], -1, 'x')).toEqual(['a']);
+  });
+});
+
+describe('moveTo', () => {
+  const items = ['a', 'b', 'c', 'd'];
+
+  it('takes an item out and puts it back further along', () => {
+    expect(moveTo(items, 0, 2)).toEqual(['b', 'c', 'a', 'd']);
+  });
+
+  it('takes an item out and puts it back earlier', () => {
+    expect(moveTo(items, 3, 1)).toEqual(['a', 'd', 'b', 'c']);
+  });
+
+  it('shifts everything between by one, rather than swapping a pair', () => {
+    // The difference from moveItem, which would give ['d', 'b', 'c', 'a'].
+    expect(moveTo(items, 0, 3)).toEqual(['b', 'c', 'd', 'a']);
+  });
+
+  it('leaves the list alone for a no-op or an out-of-range move', () => {
+    expect(moveTo(items, 1, 1)).toEqual(items);
+    expect(moveTo(items, -1, 2)).toEqual(items);
+    expect(moveTo(items, 1, 9)).toEqual(items);
+  });
+
+  it('never mutates its input', () => {
+    const original = [...items];
+    moveTo(items, 0, 3);
+    expect(items).toEqual(original);
+  });
+});
+
+describe('positionForDropSlot', () => {
+  // Slots sit between items: for [a, b, c, d] the slots are
+  //   0 a 1 b 2 c 3 d 4
+  it("drops before an earlier item at that item's index", () => {
+    expect(positionForDropSlot(3, 1)).toBe(1);
+    expect(positionForDropSlot(2, 0)).toBe(0);
+  });
+
+  it('pulls a later drop back by one, for the gap the item leaves behind', () => {
+    // Dragging `a` (0) onto the slot after `c` (3) should land it third,
+    // at index 2 -- not 3, which would put it after `d`.
+    expect(positionForDropSlot(0, 3)).toBe(2);
+    expect(positionForDropSlot(0, 4)).toBe(3);
+  });
+
+  it('treats the slots either side of an item as no move at all', () => {
+    expect(positionForDropSlot(2, 2)).toBeNull();
+    expect(positionForDropSlot(2, 3)).toBeNull();
+  });
+
+  it('round-trips against moveTo for every slot in a small list', () => {
+    const items = ['a', 'b', 'c', 'd'];
+    // Dropping each item on each slot either leaves the list alone or moves
+    // exactly that item, never loses or duplicates one.
+    for (let from = 0; from < items.length; from++) {
+      for (let slot = 0; slot <= items.length; slot++) {
+        const to = positionForDropSlot(from, slot);
+        const result = to === null ? [...items] : moveTo(items, from, to);
+        expect(result).toHaveLength(items.length);
+        expect([...result].sort()).toEqual([...items].sort());
+      }
+    }
   });
 });

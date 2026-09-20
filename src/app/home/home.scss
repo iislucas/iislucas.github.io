@@ -68,22 +68,78 @@
 .profile-links {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.4em;
   margin-top: 0.75em;
   justify-content: center;
+  // Edit mode adds a dashed ring around each chip, which is drawn outside the
+  // chip's box and would otherwise collide with its neighbours. Widening the
+  // gap makes room for it, and animating the change means the row eases apart
+  // rather than jumping when edit mode is switched on.
+  transition: gap 0.2s ease;
+}
+
+// The row stays a row in edit mode. It used to become a column of stacked
+// label-and-URL pairs, which meant switching into edit mode rearranged the
+// page around you before you had changed anything.
+.profile-links.editing {
+  gap: 0.75em;
+}
+
+// The place between two chips where a link can be added, and where a dragged
+// chip lands. It grows out of nothing when edit mode starts, so the row opens
+// up rather than the slots appearing on top of it.
+.link-slot {
+  flex-shrink: 0;
+  width: 0;
+  height: 1.6em;
+  padding: 0;
+  overflow: hidden;
+  border: 1px dashed transparent;
+  border-radius: $radius-sm;
+  background-color: transparent;
+  box-shadow: none;
+  color: $text-muted;
+  opacity: 0;
+  cursor: pointer;
+  transition:
+    width 0.2s ease,
+    opacity 0.2s ease,
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+
+  .profile-links.editing & {
+    width: 1.15em;
+    opacity: 0.65;
+  }
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+    border-color: $edit-hover-outline;
+    background-color: $tint-bg;
+    color: $heading-accent-color;
+  }
+
+  // Where a dragged chip would land. Wider, so the row visibly opens a space
+  // for it rather than only changing colour.
+  &.drop-target {
+    opacity: 1;
+    width: 2.2em;
+    border-color: $heading-accent-color;
+    background-color: $tint-bg;
+  }
+}
+
+.link-slot-mark {
+  display: block;
+  font-size: 1.1em;
+  line-height: 1;
 }
 
 .profile-photo-slot {
   flex-shrink: 0;
   width: 96px;
-}
-
-// In edit mode each link is an entry of its own, with its URL under the chip.
-.profile-links.editing {
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-  gap: 0.6em;
 }
 
 .link-url {
