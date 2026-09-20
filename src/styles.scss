@@ -1201,7 +1201,12 @@ button.menu-item {
   align-items: center;
   gap: 0.35rem;
   padding: 0.3rem;
-  background: $highlight-tag-bg;
+  background: $tab-track-bg;
+  // Outlined in the nav bar's own colour. Where the strip hangs off the bar
+  // the top border is dropped (see .header-extension-tabs), so the two read as
+  // one piece rather than as a box stuck underneath.
+  border: 1px solid $header-bg-color;
+  box-sizing: border-box;
   border-radius: 10px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
