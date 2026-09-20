@@ -8,6 +8,8 @@ import {
   FirebaseStateService,
   SiteUser,
 } from '../../firebase-state.service';
+import { RoutingService } from '../../routing.service';
+import { ROUTING_CONFIG, initPathPatterns } from '../../app.config';
 import { SaveResult } from '../../content.service';
 
 describe('EditableFieldComponent', () => {
@@ -24,6 +26,9 @@ describe('EditableFieldComponent', () => {
       providers: [
         provideZonelessChangeDetection(),
         { provide: FirebaseStateService, useValue: firebaseState },
+        // EditModeService mirrors edit mode into the URL, so it needs a router.
+        RoutingService,
+        { provide: ROUTING_CONFIG, useValue: { validPathPatterns: initPathPatterns } },
       ],
     }).compileComponents();
 

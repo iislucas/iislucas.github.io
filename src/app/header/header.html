@@ -49,17 +49,17 @@
     }
   </div>
 
-  @if (isAdmin()) {
+  <!-- Only a way in: the banner's Done button is the way out, so the toggle
+       stands down while edit mode is on. -->
+  @if (isAdmin() && !editMode.active()) {
     <button
       type="button"
       class="nav-edit-toggle"
-      [class.active]="editMode.active()"
-      [attr.aria-pressed]="editMode.active()"
-      [title]="editMode.active() ? 'Leave edit mode' : 'Edit this site in place'"
-      (click)="editMode.toggle()"
+      title="Edit this site in place"
+      (click)="editMode.setActive(true)"
     >
       <app-icon name="edit" width="1.1em" height="1.1em"></app-icon>
-      <span class="label">{{ editMode.active() ? 'Editing' : 'Edit' }}</span>
+      <span class="label">Edit</span>
     </button>
   }
 
@@ -117,7 +117,9 @@
   </div>
 </div>
 
-<!-- The site's two sections, hanging off the bottom of the bar. Real links, so
+<app-edit-mode-banner></app-edit-mode-banner>
+
+<!-- The site's two sections, hanging off the bottom of the header. Real links, so
      they can be opened in a new tab and middle-clicked like any other
      navigation; `data-label` reserves the width of the bold active label so
      the strip does not shift as you move between them. -->

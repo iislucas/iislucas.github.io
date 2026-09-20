@@ -1,7 +1,7 @@
 @use '../../scss_variables' as *;
 
 .home-page {
-  padding-top: 1.75em;
+  padding-top: 0.9em;
   padding-bottom: 3em;
 }
 
@@ -73,13 +73,6 @@
   justify-content: center;
 }
 
-.profile-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3em;
-  text-decoration: none;
-}
-
 .profile-photo-slot {
   flex-shrink: 0;
   width: 96px;
@@ -144,13 +137,6 @@
   }
 }
 
-.papers-scholar-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3em;
-  text-decoration: none;
-}
-
 .papers-intro {
   display: block;
   margin: 0.5em 0 1.25em;
@@ -202,13 +188,6 @@
   margin-top: 0.5em;
 }
 
-.paper-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3em;
-  text-decoration: none;
-}
-
 .paper-why {
   display: block;
   margin-top: 0.5em;
@@ -246,7 +225,7 @@
 
 @media (max-width: 600px) {
   .home-page {
-    padding-top: 1.1em;
+    padding-top: 0.6em;
   }
 
   .profile-header {

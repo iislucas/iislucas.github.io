@@ -325,21 +325,22 @@ button.admin-button {
 .primary-button,
 a.primary-button,
 button.primary-button {
-  background-color: $heading-accent-color;
-  border: 1px solid $heading-accent-color;
+  background-color: $header-bg-color;
+  border: 1px solid $header-bg-color;
   color: #ffffff;
   font-weight: bold;
   box-shadow: none;
 
   &:hover {
-    background-color: $accent-hover-color;
-    border-color: $accent-hover-color;
+    background-color: $chrome-hover-shade;
+    border-color: $chrome-hover-shade;
     box-shadow: none;
     color: #ffffff;
   }
 
   &:active {
-    background-color: $accent-active-color;
+    background-color: $chrome-active-shade;
+    border-color: $chrome-active-shade;
     box-shadow: none;
     color: #ffffff;
   }
@@ -781,6 +782,30 @@ a.selectable-card {
   padding: 0.25em 0.5em;
   font-size: small;
   font-family: monospace;
+  // Stated here so every chip reads the same whether it is a span, a link or
+  // a filter button -- a <button> would otherwise take the button text colour
+  // and a bare <span> would inherit the body's.
+  color: $heading-accent-color;
+}
+
+// A tag chip that is also a link. This is the one style for that; do not
+// re-roll it per page. Use alongside .tag-chip.
+.chip-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  text-decoration: none;
+  color: $heading-accent-color;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    color: $accent-hover-color;
+    background-color: $menu-item-active-color;
+    border-color: $highlight-tag-border;
+  }
 }
 
 // ----------------------------------------------------------------------------
@@ -1230,7 +1255,7 @@ button.menu-item {
   font-size: 0.85rem;
   line-height: 1.25;
   font-weight: 500;
-  color: $text-muted;
+  color: $text-secondary;
   border-radius: 8px;
   white-space: nowrap;
   box-shadow: none;
@@ -1363,7 +1388,7 @@ button.menu-item {
   display: flex;
   justify-content: center;
   margin-top: 0;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.6rem;
   position: relative;
   z-index: 5;
   transform-origin: top center;
