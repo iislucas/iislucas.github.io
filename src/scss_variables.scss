@@ -52,17 +52,16 @@ $accent-active-color: var(--accent-active); // Accent while pressed
 $brand-accent: var(--accent); // Alias, for styles that name the brand directly
 $brand-red: var(--accent); // Back-compat alias (ilc-members-manager components)
 
-// Header & Footer: the dark chrome, and the rule that separates it from the page.
+// Header & Footer. There is deliberately no rule between the chrome and the
+// page at the moment; --chrome-rule survives because the appearance picker's
+// swatches outline themselves with it.
 $header-bg-color: var(--chrome-bg);
 $header-text-color: var(--chrome-text);
 $header-muted-text: var(--chrome-muted-text); // Breadcrumb trail above the page title
-$header-border-color: var(--chrome-rule);
-$header-border-width: var(--chrome-rule-width);
 $header-hover-bg: var(--chrome-hover-bg); // Nav link under the pointer
 $header-active-bg: var(--chrome-active-bg); // The nav link of the current page
 $footer-bg-color: var(--chrome-bg);
 $footer-text-color: var(--chrome-text);
-$footer-border-color: var(--chrome-rule);
 
 // ============================================================================
 //  Corner Radii
@@ -176,7 +175,6 @@ $primary-color: var(--accent);
 // ============================================================================
 $edit-hover-outline: var(--text-placeholder);
 $edit-selected-outline: var(--accent);
-$edit-selected-bg: var(--highlight-bg);
 $edit-banner-bg: #fff8e1;
 $edit-banner-border: #f0c36d;
 
@@ -196,10 +194,17 @@ $edit-banner-border: #f0c36d;
   }
 }
 
-// The selected / open state.
+// The selected / open state: the same dashed ring as the hover affordance, a
+// shade darker, lifted off the page with a soft shadow.
+//
+// Deliberately one line and no more. An open field used to stack a solid
+// outline, a gap, and the editor's own border inside it, which read as three
+// nested boxes; the editor inside now draws no border of its own (see
+// editable-field.html), so the ring below is the whole frame.
 @mixin editable-selected {
-  outline: 2px solid $edit-selected-outline;
+  outline: 1px dashed $edit-selected-outline;
   outline-offset: 3px;
   border-radius: 4px;
-  background-color: $edit-selected-bg;
+  background-color: $theme-bg-color;
+  box-shadow: 0 2px 16px 2px rgba(0, 0, 0, 0.13);
 }

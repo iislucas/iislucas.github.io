@@ -44,8 +44,9 @@
         ></textarea>
       }
       @case (EditKind.Markdown) {
+        <!-- No `bordered`: the field's own dashed ring is the frame, and a
+             second border inside it is what made this look like nested boxes. -->
         <app-markdown-editor
-          bordered
           [initialValue]="markdownSeed()"
           [imageUploader]="imageUploader()"
           (changed)="draft.set($event)"

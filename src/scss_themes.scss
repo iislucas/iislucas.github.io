@@ -25,7 +25,7 @@
 
 // Emitted on bare `:root` as well, so a visitor who has never chosen gets it.
 // Must match DEFAULT_THEME in src/app/theme/theme.ts.
-$default-theme: 'mist';
+$default-theme: 'tide';
 
 // The three font stacks the themes draw on. All system fonts: nothing here
 // waits on a webfont before the first paint.
@@ -62,7 +62,6 @@ $themes: (
       chrome-text: #f6f8fa,
       chrome-muted-text: rgba(255, 255, 255, 0.72),
       chrome-rule: #1f2933,
-      chrome-rule-width: 3px,
       chrome-hover-bg: rgba(255, 255, 255, 0.14),
       chrome-active-bg: rgba(255, 255, 255, 0.22),
       page-bg: #ffffff,
@@ -105,7 +104,6 @@ $themes: (
       chrome-text: #f8f9fa,
       chrome-muted-text: rgba(255, 255, 255, 0.74),
       chrome-rule: #2f353d,
-      chrome-rule-width: 3px,
       chrome-hover-bg: rgba(255, 255, 255, 0.15),
       chrome-active-bg: rgba(255, 255, 255, 0.24),
       page-bg: #ffffff,
@@ -148,7 +146,6 @@ $themes: (
       chrome-text: #f7f8fc,
       chrome-muted-text: rgba(255, 255, 255, 0.73),
       chrome-rule: #262d3f,
-      chrome-rule-width: 3px,
       chrome-hover-bg: rgba(255, 255, 255, 0.14),
       chrome-active-bg: rgba(255, 255, 255, 0.22),
       page-bg: #ffffff,
@@ -189,16 +186,15 @@ $themes: (
   // --------------------------------------------------------------------------
   'tide': (
       chrome-bg: #566a76,
-      chrome-text: #f5f9fa,
-      chrome-muted-text: rgba(255, 255, 255, 0.73),
+      chrome-text: #ffffff,
+      chrome-muted-text: rgba(255, 255, 255, 0.88),
       chrome-rule: #1e2b30,
-      chrome-rule-width: 3px,
-      chrome-hover-bg: rgba(255, 255, 255, 0.14),
-      chrome-active-bg: rgba(255, 255, 255, 0.22),
+      chrome-hover-bg: rgba(255, 255, 255, 0.16),
+      chrome-active-bg: rgba(255, 255, 255, 0.26),
       page-bg: #ffffff,
       surface-bg: #ffffff,
-      surface-border: #d5dee0,
-      separator-bg: #f4f8f8,
+      surface-border: #dde4e5,
+      separator-bg: #f8fafa,
 
       accent: #1f6f7a,
       accent-hover: #185b64,
@@ -234,7 +230,6 @@ $themes: (
       chrome-text: #f1f6fa,
       chrome-muted-text: rgba(255, 255, 255, 0.72),
       chrome-rule: #16303f,
-      chrome-rule-width: 3px,
       chrome-hover-bg: rgba(255, 255, 255, 0.13),
       chrome-active-bg: rgba(255, 255, 255, 0.21),
       page-bg: #ffffff,
@@ -277,7 +272,6 @@ $themes: (
       chrome-text: #eef2f6,
       chrome-muted-text: rgba(255, 255, 255, 0.68),
       chrome-rule: #000000,
-      chrome-rule-width: 4px,
       chrome-hover-bg: rgba(255, 255, 255, 0.1),
       chrome-active-bg: rgba(255, 255, 255, 0.18),
       page-bg: #ffffff,
@@ -320,7 +314,6 @@ $themes: (
       chrome-text: #f8fafc,
       chrome-muted-text: rgba(255, 255, 255, 0.78),
       chrome-rule: #b7c6d4,
-      chrome-rule-width: 3px,
       chrome-hover-bg: rgba(255, 255, 255, 0.16),
       chrome-active-bg: rgba(255, 255, 255, 0.26),
       page-bg: #fcfdfe,

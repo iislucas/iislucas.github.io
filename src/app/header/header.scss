@@ -2,14 +2,17 @@
 @use '../../styles' as *;
 
 .nav-bar {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.75em;
   padding: 0.5em 1em;
-  min-height: 3em;
+  // The title block is out of flow, so the bar cannot be sized by it. This
+  // reserves room for the trail and the title together, which also stops the
+  // bar changing height between pages that have a trail and pages that do not.
+  min-height: 3.6em;
   background-color: $header-bg-color;
   color: $header-text-color;
-  border-bottom: $header-border-width solid $header-border-color;
   box-sizing: border-box;
 }
 
@@ -68,12 +71,31 @@
   min-width: 13em;
 }
 
+// Centred on the bar itself, not on the space left over between the controls:
+// the title sits in the middle of the window however many buttons flank it.
+// That means taking it out of the flex flow, so it cannot be pushed about.
 .title-container {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  flex-grow: 1;
   min-width: 0;
+  // Keeps the title clear of the controls at either end.
+  max-width: calc(100% - 13em);
+
+  .nav-bar.has-edit & {
+    max-width: calc(100% - 17em);
+  }
+  // The bar's controls sit underneath this box at its edges, so clicks must
+  // fall through it; the crumb links opt back in.
+  pointer-events: none;
+
+  a {
+    pointer-events: auto;
+  }
 }
 
 // The trail animates in and out by growing a grid row from 0fr to 1fr, so the
@@ -176,11 +198,13 @@
   justify-content: flex-end;
   gap: 0.5em;
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 .nav-edit-toggle {
   display: inline-flex;
   align-items: center;
+  flex-shrink: 0;
   gap: 0.35em;
   color: $header-text-color;
   background-color: transparent;
@@ -219,6 +243,15 @@
 
   .page-title {
     font-size: 1.15em;
+  }
+
+  .title-container {
+    max-width: calc(100% - 9.5em);
+  }
+
+  // The edit toggle is icon-only on a phone, so it costs much less room.
+  .nav-bar.has-edit .title-container {
+    max-width: calc(100% - 12em);
   }
 
   // The trail is one line of small text; let it scroll rather than wrap the

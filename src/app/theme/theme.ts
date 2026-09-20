@@ -30,10 +30,15 @@ export interface ThemeOption {
 
 // The theme a visitor gets when they have never chosen one. Must match
 // `$default-theme` in src/scss_themes.scss, which emits these values on :root.
-export const DEFAULT_THEME = Theme.Mist;
+export const DEFAULT_THEME = Theme.Tide;
 
 // Listed in the order they appear in the picker.
 export const THEME_OPTIONS: ThemeOption[] = [
+  {
+    id: Theme.Tide,
+    label: 'Tide',
+    description: 'Green-cast slate, teal accent',
+  },
   {
     id: Theme.Mist,
     label: 'Mist',
@@ -53,11 +58,6 @@ export const THEME_OPTIONS: ThemeOption[] = [
     id: Theme.Dusk,
     label: 'Dusk',
     description: 'Slate towards violet, indigo accent',
-  },
-  {
-    id: Theme.Tide,
-    label: 'Tide',
-    description: 'Green-cast slate, teal accent',
   },
   {
     id: Theme.Harbor,
