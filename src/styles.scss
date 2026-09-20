@@ -1201,7 +1201,7 @@ button.menu-item {
   align-items: center;
   gap: 0.35rem;
   padding: 0.3rem;
-  background: #e4e4e7;
+  background: $highlight-tag-bg;
   border-radius: 10px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -1225,7 +1225,7 @@ button.menu-item {
   font-size: 0.85rem;
   line-height: 1.25;
   font-weight: 500;
-  color: #71717a;
+  color: $text-muted;
   border-radius: 8px;
   white-space: nowrap;
   box-shadow: none;
@@ -1268,7 +1268,7 @@ button.menu-item {
   }
 
   &:hover {
-    color: #27272a;
+    color: $text-primary;
     background: rgba(255, 255, 255, 0.7);
     box-shadow: none;
   }
@@ -1276,7 +1276,7 @@ button.menu-item {
   &:active {
     transform: none;
     box-shadow: none;
-    color: #27272a;
+    color: $text-primary;
     background: rgba(255, 255, 255, 0.7);
   }
 
@@ -1290,8 +1290,8 @@ button.menu-item {
   }
 
   &.active {
-    background: white;
-    color: #18181b;
+    background: $theme-bg-color;
+    color: $text-primary;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
     font-weight: 600;
   }
@@ -1634,29 +1634,26 @@ button.menu-item {
 //  Vendored markdown output
 //
 //  The markdown viewer comes from ilc-members-manager (src/app/markdown-editor,
-//  overwritten by `pnpm run sync:markdown-editor`), and paints links and
-//  blockquotes in that project's brand red with `!important`. Those are the
-//  links in the body of every page here, so they have to follow this site's
-//  accent instead.
+//  overwritten by `pnpm run sync:markdown-editor`), and paints its own text,
+//  links and rules with `!important` so they survive the host page's styles.
 //
-//  Overriding rather than editing the vendored file keeps the next sync clean.
-//  The doubled class is what lifts these rules above the vendored ones: those
-//  are emitted as `.markdown-viewer[_ngcontent-xyz] a`, whose hashed attribute
-//  cannot be named here, so the selector below has to out-specify it.
+//  It reads those values from `--md-*` custom properties, so theming it is a
+//  matter of setting them rather than out-specifying it. This used to be a
+//  doubled class and a pile of `!important` overrides fighting the vendored
+//  ones; the properties replaced that.
 // ----------------------------------------------------------------------------
 
-app-markdown-viewer .markdown-viewer.markdown-viewer {
-  a,
-  a:visited {
-    color: $heading-accent-color !important;
-  }
-
-  a:hover {
-    color: $accent-hover-color !important;
-  }
-
-  blockquote {
-    border-left-color: $heading-accent-color !important;
-    background: $separator-color !important;
-  }
+app-markdown-viewer,
+app-markdown-editor {
+  // Interpolated: a custom property's value is taken literally, so a bare
+  // `$variable` would be written out as the text "$variable".
+  --md-font-family: #{$font-body};
+  --md-text-color: #{$text-primary};
+  --md-link-color: #{$heading-accent-color};
+  --md-link-hover-color: #{$accent-hover-color};
+  --md-accent-color: #{$heading-accent-color};
+  --md-blockquote-bg: #{$separator-color};
+  --md-border-color: #{$border-color-light};
+  --md-code-bg: #{$separator-color};
+  --md-table-header-bg: #{$separator-color};
 }
