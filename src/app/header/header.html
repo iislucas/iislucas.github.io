@@ -116,3 +116,28 @@
     }
   </div>
 </div>
+
+<!-- The site's two sections, hanging off the bottom of the bar. Real links, so
+     they can be opened in a new tab and middle-clicked like any other
+     navigation; `data-label` reserves the width of the bold active label so
+     the strip does not shift as you move between them. -->
+@if (showSectionTabs()) {
+  <div class="header-extension-tabs">
+    <nav class="pill-tabs">
+      <a
+        class="pill-tab"
+        data-label="About Lucas"
+        [class.active]="currentView() === Views.Home"
+        [href]="homeHref()"
+        >About Lucas</a
+      >
+      <a
+        class="pill-tab"
+        data-label="Concept Gallery"
+        [class.active]="isConceptsSection()"
+        [href]="conceptsHref()"
+        >Concept Gallery</a
+      >
+    </nav>
+  </div>
+}

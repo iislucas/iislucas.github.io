@@ -76,6 +76,10 @@ describe('HeaderComponent', () => {
     ).map((item) => item.textContent?.trim() ?? '');
   }
 
+  function sectionTabs(): HTMLAnchorElement[] {
+    return Array.from(fixture.nativeElement.querySelectorAll('.header-extension-tabs .pill-tab'));
+  }
+
   function shareButton(): HTMLAnchorElement {
     return fixture.nativeElement.querySelector('.nav-actions .header-icon-btn');
   }
@@ -118,6 +122,27 @@ describe('HeaderComponent', () => {
     await fixture.whenStable();
 
     expect(fixture.nativeElement.querySelector('app-profile-menu')).not.toBeNull();
+  });
+
+  it('offers the two sections as tabs under the bar', () => {
+    const tabs = sectionTabs();
+
+    expect(tabs.map((tab) => tab.textContent?.trim())).toEqual(['About Lucas', 'Concept Gallery']);
+    // Real links, so they can be opened in a new tab like any other navigation.
+    expect(tabs.map((tab) => tab.getAttribute('href'))).toEqual(['/', '/concepts']);
+    // At the root, the first tab is the one you are on.
+    expect(tabs[0].classList.contains('active')).toBe(true);
+    expect(tabs[1].classList.contains('active')).toBe(false);
+  });
+
+  it('hides the section tabs on a single concept, which sits below them', async () => {
+    window.history.replaceState(null, '', '/concepts/a-concept');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+    await fixture.whenStable();
+
+    expect(sectionTabs()).toHaveLength(0);
+    // The trail and back button are how you get out from there instead.
+    expect(fixture.nativeElement.querySelector('.header-icon-btn[href]')).not.toBeNull();
   });
 
   it('offers sharing to everyone, signed in or not', () => {

@@ -1231,6 +1231,8 @@ button.menu-item {
   box-shadow: none;
   text-align: center;
   box-sizing: border-box;
+  // Also used on <a> for section navigation, which must not be underlined.
+  text-decoration: none;
   -webkit-tap-highlight-color: transparent;
   outline: none;
 
