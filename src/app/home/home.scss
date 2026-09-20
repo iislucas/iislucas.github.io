@@ -50,11 +50,14 @@
   flex-grow: 1;
   min-width: 0;
 
+  // Only shown in edit mode -- the nav bar carries the name otherwise -- and
+  // centred to match the tagline and the link chips beneath it.
   h1 {
     margin: 0;
     color: $text-primary;
     font-size: 1.9em;
     line-height: 1.15;
+    text-align: center;
   }
 
   .tagline {
