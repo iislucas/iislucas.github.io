@@ -24,3 +24,7 @@
 
   <app-footer></app-footer>
 </div>
+
+<!-- Outside the app container: it floats over the page rather than taking a
+     place in it, the way ilc-members-manager shows its build. -->
+<span class="version-badge" [title]="'Build: ' + appVersion">v{{ appVersion }}</span>

@@ -7,8 +7,8 @@
   text-decoration: none;
   color: inherit;
   background-color: $theme-bg-color;
-  border: 1px solid $border-color-light;
-  border-radius: 0.4em;
+  border: 1px solid $surface-border;
+  border-radius: $radius-card;
   overflow: hidden;
   transition:
     border-color 0.15s ease,
@@ -17,7 +17,7 @@
 
   &:hover {
     color: inherit;
-    border-color: $theme-border-color;
+    border-color: $heading-accent-color;
     transform: translateY(-2px);
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
   }
@@ -28,7 +28,7 @@
   aspect-ratio: 16 / 9;
   object-fit: cover;
   display: block;
-  border-bottom: 1px solid $border-color-light;
+  border-bottom: 1px solid $surface-border;
 }
 
 .card-body {

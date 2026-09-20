@@ -20,6 +20,9 @@ import { NotFoundComponent } from './not-found/not-found';
 import { FooterComponent } from './footer/footer';
 import { EditModeBannerComponent } from './edit-mode/edit-mode-banner/edit-mode-banner';
 import { EditModeService } from './edit-mode/edit-mode.service';
+import { ThemeService } from './theme/theme.service';
+import { NavigationTreeService } from './navigation-tree';
+import { APP_VERSION } from './version';
 
 @Component({
   selector: 'app-root',
@@ -40,22 +43,25 @@ import { EditModeService } from './edit-mode/edit-mode.service';
 export class App {
   protected routingService: RoutingService<AppPathPatterns> = inject(RoutingService);
   private editMode = inject(EditModeService);
+  // Injected for its constructor: it puts the visitor's saved theme on the
+  // document before anything is rendered, so the page never flashes another.
+  private themes = inject(ThemeService);
+  private navTree = inject(NavigationTreeService);
 
   protected Views = Views;
+  // Which build this page came from, floated in the corner. See
+  // scripts/stamp-version.mjs.
+  protected appVersion = APP_VERSION;
   protected currentView = computed(() => this.routingService.matchedPatternId() as Views | null);
   protected isNotFound = computed(() => this.currentView() === null);
 
   constructor() {
     // Keep the document title in step with the view; it is what shows in tabs,
-    // history and bookmarks.
+    // history and bookmarks. It comes from the same navigation tree as the
+    // breadcrumbs, so the tab and the nav bar always agree — including on a
+    // concept page, where the title only arrives with the content.
     effect(() => {
-      const view = this.currentView();
-      const titles: Partial<Record<Views, string>> = {
-        [Views.Home]: 'Lucas Dixon',
-        [Views.Concepts]: 'Concept Gallery — Lucas Dixon',
-        [Views.Login]: 'Sign in — Lucas Dixon',
-      };
-      document.title = view ? (titles[view] ?? 'Lucas Dixon') : 'Not found — Lucas Dixon';
+      document.title = this.navTree.documentTitle();
     });
 
     // A half-finished edit or selection does not follow you to another page.

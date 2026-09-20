@@ -4,12 +4,18 @@
  * behaviour — avatar from the auth photo, or a coloured initial derived from
  * the email — with the member-profile switching removed: there is one account
  * here, and what it can do is decided by its ACL document.
+ *
+ * It also holds the appearance picker: the site's themes, with the active one
+ * marked. Picking one deliberately leaves the menu open, so several can be
+ * compared against the page behind it without reopening the menu each time.
  */
 
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FirebaseStateService } from '../firebase-state.service';
 import { IconComponent } from '../icons/icon.component';
 import { EditModeService } from '../edit-mode/edit-mode.service';
+import { ThemeService } from '../theme/theme.service';
+import { Theme } from '../theme/theme';
 
 @Component({
   selector: 'app-profile-menu',
@@ -22,6 +28,7 @@ import { EditModeService } from '../edit-mode/edit-mode.service';
 export class ProfileMenuComponent {
   public firebaseState = inject(FirebaseStateService);
   protected editMode = inject(EditModeService);
+  protected themes = inject(ThemeService);
 
   protected user = this.firebaseState.user;
   protected isAdmin = this.firebaseState.isAdmin;
@@ -52,6 +59,10 @@ export class ProfileMenuComponent {
     }
     return color;
   });
+
+  protected selectTheme(theme: Theme) {
+    this.themes.select(theme);
+  }
 
   protected toggleEditMode() {
     this.menuOpen.set(false);

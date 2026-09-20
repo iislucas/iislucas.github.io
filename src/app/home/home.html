@@ -38,15 +38,19 @@
         </div>
       }
       <div class="profile-heading">
-        <h1>
-          <app-editable-field
-            fieldId="profile.name"
-            label="Name"
-            [value]="p.name"
-            [commit]="profileCommit('name')"
-            >{{ p.name }}</app-editable-field
-          >
-        </h1>
+        <!-- The nav bar carries the name on every page. In edit mode it comes
+             back here, because tapping it is how the name gets changed. -->
+        @if (editing()) {
+          <h1>
+            <app-editable-field
+              fieldId="profile.name"
+              label="Name"
+              [value]="p.name"
+              [commit]="profileCommit('name')"
+              >{{ p.name }}</app-editable-field
+            >
+          </h1>
+        }
         @if (p.tagline || editing()) {
           <p class="tagline">
             <app-editable-field
@@ -327,9 +331,6 @@
             <app-concept-card [concept]="concept"></app-concept-card>
           }
         </div>
-        @if (hasMoreConcepts()) {
-          <a class="button see-all-button" [href]="conceptsHref()">See the whole gallery</a>
-        }
       </section>
     }
   }

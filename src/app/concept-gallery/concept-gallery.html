@@ -1,7 +1,7 @@
 <div class="centered-container gallery-page">
   <header class="gallery-header">
+    <!-- No <h1> here: the nav bar already names the page. -->
     <div class="heading-row">
-      <h1>Concept Gallery</h1>
       @if (editing() && !creating()) {
         <button type="button" class="outlined-button" (click)="startCreating()">
           <app-icon name="add" width="1em" height="1em"></app-icon>

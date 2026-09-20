@@ -1,18 +1,103 @@
 <div class="nav-bar">
-  <a class="site-title" [href]="homeHref()">
-    <span class="site-name">Lucas Dixon</span>
-  </a>
+  <div class="menu-anchor">
+    <button
+      type="button"
+      class="header-icon-btn"
+      [class.active]="menuOpen()"
+      [attr.aria-expanded]="menuOpen()"
+      title="Navigation menu"
+      aria-label="Navigation menu"
+      (click)="menuOpen.set(!menuOpen())"
+    >
+      <app-icon name="menu" width="1.3em" height="1.3em"></app-icon>
+    </button>
 
-  <nav class="nav-links">
-    <a class="nav-link" [class.active]="currentView() === Views.Home" [href]="homeHref()">About</a>
-    <a class="nav-link" [class.active]="isConceptsSection()" [href]="conceptsHref()">
-      <span class="long-label">Concept Gallery</span>
-      <span class="short-label">Concepts</span>
+    @if (menuOpen()) {
+      <div class="menu-overlay transparent" (click)="closeMenu()"></div>
+      <nav class="nav-dropdown">
+        <a
+          class="menu-item"
+          [class.active]="currentView() === Views.Home"
+          [href]="homeHref()"
+          (click)="closeMenu()"
+        >
+          <app-icon name="person" width="20px" height="20px"></app-icon>
+          About
+        </a>
+        <a
+          class="menu-item"
+          [class.active]="isConceptsSection()"
+          [href]="conceptsHref()"
+          (click)="closeMenu()"
+        >
+          <app-icon name="collections" width="20px" height="20px"></app-icon>
+          Concept Gallery
+        </a>
+        @if (!isLoggedIn()) {
+          <div class="menu-seperator"></div>
+          <a
+            class="menu-item"
+            [class.active]="currentView() === Views.Login"
+            [href]="loginHref()"
+            (click)="closeMenu()"
+          >
+            <app-icon name="lock" width="20px" height="20px"></app-icon>
+            Sign in
+          </a>
+        }
+      </nav>
+    }
+  </div>
+
+  @if (upNode(); as up) {
+    <a class="header-icon-btn" [href]="up.url" [title]="'Back to ' + up.label">
+      <app-icon name="arrow_back" width="1.3em" height="1.3em"></app-icon>
     </a>
-  </nav>
+  }
 
-  @if (isLoggedIn()) {
-    <div class="nav-actions">
+  <div class="title-container">
+    <!-- A grid-row accordion, so the bar grows and shrinks smoothly as the
+         trail appears and disappears rather than jumping a line. -->
+    <div class="breadcrumbs-accordion" [class.open]="parentCrumbs().length > 0">
+      <div class="breadcrumbs-inner">
+        <div class="breadcrumb-parents">
+          @for (crumb of parentCrumbs(); track $index) {
+            <span class="crumb">
+              @if (crumb.url) {
+                <a class="crumb-link" [href]="crumb.url">{{ crumb.label }}</a>
+              } @else {
+                <span class="crumb-label">{{ crumb.label }}</span>
+              }
+              <span class="crumb-separator" aria-hidden="true">›</span>
+            </span>
+          }
+        </div>
+      </div>
+    </div>
+
+    @if (currentCrumb(); as crumb) {
+      <div class="page-title">
+        @if (crumb.isLoading) {
+          <span class="title-placeholder" aria-label="Loading"></span>
+        } @else {
+          {{ crumb.label }}
+        }
+      </div>
+    }
+  </div>
+
+  <div class="nav-actions">
+    <a
+      class="header-icon-btn"
+      [href]="currentUrl()"
+      (click)="share($event)"
+      [title]="shareCopied() ? 'Link copied to clipboard' : 'Share or copy a link to this page'"
+      [attr.aria-label]="shareCopied() ? 'Link copied' : 'Share this page'"
+    >
+      <app-icon [name]="shareCopied() ? 'check' : 'share'" width="1.2em" height="1.2em"></app-icon>
+    </a>
+
+    @if (isLoggedIn()) {
       @if (isAdmin()) {
         <button
           type="button"
@@ -27,6 +112,6 @@
         </button>
       }
       <app-profile-menu></app-profile-menu>
-    </div>
-  }
+    }
+  </div>
 </div>

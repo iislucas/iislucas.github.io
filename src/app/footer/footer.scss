@@ -10,7 +10,7 @@ footer {
   margin-top: 2em;
   background-color: $footer-bg-color;
   color: $footer-text-color;
-  border-top: 3px solid $footer-border-color;
+  border-top: $header-border-width solid $footer-border-color;
   font-size: 0.9em;
 
   a {

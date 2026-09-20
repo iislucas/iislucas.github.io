@@ -10,3 +10,33 @@ main {
   flex-grow: 1;
   width: 100%;
 }
+
+// The build this page came from. Pinned to the corner and kept faint: it is
+// only ever looked for deliberately, so it should never compete with the page.
+// Carried over from ilc-members-manager, which floats it the same way.
+.version-badge {
+  position: fixed;
+  bottom: 0.4em;
+  right: 0.6em;
+  z-index: 100;
+  padding: 0.2em 0.5em;
+  border-radius: $radius-sm;
+  font-size: 0.7em;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: $text-muted;
+  background-color: $page-bg-color;
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+// It says nothing useful on paper, and would print over the content.
+@media print {
+  .version-badge {
+    display: none;
+  }
+}

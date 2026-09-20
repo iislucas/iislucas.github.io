@@ -1,9 +1,4 @@
 <div class="centered-container concept-page">
-  <a class="back-link" [href]="galleryHref()">
-    <app-icon name="arrow_back" width="1em" height="1em"></app-icon>
-    Concept Gallery
-  </a>
-
   @if (!conceptsLoaded()) {
     <div class="loading-note">Loading…</div>
   } @else if (notFound()) {
@@ -19,15 +14,20 @@
   } @else if (concept(); as concept) {
     <article class="concept">
       <header class="concept-header">
-        <h1>
-          <app-editable-field
-            fieldId="concept.title"
-            label="Title"
-            [value]="concept.title"
-            [commit]="commitText('title')"
-            >{{ concept.title }}</app-editable-field
-          >
-        </h1>
+        <!-- The nav bar states the title on every page; repeating it here
+             would say it twice. In edit mode it comes back, because tapping it
+             is how the title gets changed. -->
+        @if (editing()) {
+          <h1>
+            <app-editable-field
+              fieldId="concept.title"
+              label="Title"
+              [value]="concept.title"
+              [commit]="commitText('title')"
+              >{{ concept.title }}</app-editable-field
+            >
+          </h1>
+        }
 
         @if (!concept.published || editing()) {
           <div class="status-row">
