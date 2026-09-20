@@ -527,6 +527,11 @@ textarea.edit-input {
   color: inherit;
   line-height: inherit;
   background-color: $theme-bg-color;
+  // Form controls do not inherit text-align: the UA stylesheet sets `start` on
+  // them. Without this, opening an editor over centred text — the name and the
+  // tagline on the home page — jumps it to the left for as long as it is being
+  // edited, which is exactly when it should look most like what it will become.
+  text-align: inherit;
 }
 
 textarea.edit-input {
