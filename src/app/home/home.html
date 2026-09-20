@@ -20,8 +20,9 @@
     @let p = profile();
     <header class="profile-header">
       @if (p.photoUrl || editing()) {
-        <div class="profile-photo-slot">
+        <div class="profile-photo-slot" [class.cropping]="photoEditor.isOpen()">
           <app-editable-image
+            #photoEditor
             fieldId="profile.photo"
             label="Photo"
             [imageUrl]="p.photoUrl"

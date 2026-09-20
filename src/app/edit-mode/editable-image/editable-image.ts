@@ -42,6 +42,11 @@ export interface ImageSize {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class.editing]': 'editMode.active()',
+    // `editing` only says edit mode is on. `open` says this particular
+    // editor is the one showing, which is what a page needs in order to give
+    // the cropper room: it is often placed in a slot sized for the finished
+    // image, which is far too small to crop in.
+    '[class.open]': 'isOpen()',
   },
 })
 export class EditableImageComponent {
@@ -60,7 +65,7 @@ export class EditableImageComponent {
   cropSize = input<ImageSize>({ width: 1200, height: 800 });
   commit = input.required<(urls: ImageUrls) => Promise<SaveResult>>();
 
-  protected isOpen = computed(() => this.editMode.openFieldId() === this.fieldId());
+  public isOpen = computed(() => this.editMode.openFieldId() === this.fieldId());
   protected canUndo = computed(() => this.editMode.canUndo(this.fieldId()));
   protected thumbSize = computed<ImageSize>(() => ({
     width: 240,

@@ -41,6 +41,10 @@
   @include editable-selected;
   padding: 0.5em;
   box-sizing: border-box;
+  // The cropper needs a usable width whatever the host slot was sized for.
+  // The page is responsible for giving the slot that room (see the `open`
+  // host class); this stops the editor collapsing if it does not.
+  min-width: min(18em, 100%);
 }
 
 .inline-error {

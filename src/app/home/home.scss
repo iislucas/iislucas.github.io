@@ -30,6 +30,7 @@
 .profile-header {
   display: flex;
   align-items: flex-start;
+  flex-wrap: wrap;
   gap: 1.2em;
   margin-bottom: 1.5em;
   padding-bottom: 1.25em;
@@ -140,6 +141,19 @@
 .profile-photo-slot {
   flex-shrink: 0;
   width: 96px;
+  transition: width 0.2s ease;
+}
+
+// The slot is sized for the finished photo, which is nowhere near enough room
+// to crop one in. While the cropper is open the slot takes the full width and
+// the heading wraps below it, then both go back.
+//
+// Driven by a class bound on the slot rather than by
+// `:has(app-editable-image.open)`. Both work; the binding is preferred because
+// it states the dependency in the template, where it can be seen, rather than
+// leaving the slot's width to a selector reaching into a child component.
+.profile-photo-slot.cropping {
+  width: 100%;
 }
 
 .link-url {
