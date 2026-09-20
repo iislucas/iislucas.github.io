@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
@@ -77,6 +78,28 @@ describe('ThemeService', () => {
 
     expect(new Set(ids).size).toBe(ids.length);
     expect(new Set(ids)).toEqual(new Set(Object.values(Theme)));
+  });
+});
+
+/*
+ * The default theme, and the set of themes, are stated twice: once here in
+ * TypeScript and once in the stylesheet that emits their custom properties.
+ * They have to agree, and nothing at compile time makes them — a mismatch just
+ * shows the wrong colours. These read the stylesheet and check.
+ */
+describe('theme definitions and the stylesheet', () => {
+  const stylesheet = readFileSync('src/scss_themes.scss', 'utf8');
+
+  it('agrees on which theme is the default', () => {
+    const declared = stylesheet.match(/\$default-theme:\s*'([^']+)'/)?.[1];
+
+    expect(declared).toBe(DEFAULT_THEME);
+  });
+
+  it('defines every theme the enum names', () => {
+    const defined = Array.from(stylesheet.matchAll(/^ {2}'([a-z-]+)': \(/gm)).map((m) => m[1]);
+
+    expect(new Set(defined)).toEqual(new Set(Object.values(Theme)));
   });
 });
 

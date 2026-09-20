@@ -1,4 +1,4 @@
-<div class="nav-bar">
+<div class="nav-bar" [class.has-edit]="isAdmin()">
   <div class="menu-anchor">
     <button
       type="button"
@@ -49,6 +49,20 @@
     }
   </div>
 
+  @if (isAdmin()) {
+    <button
+      type="button"
+      class="nav-edit-toggle"
+      [class.active]="editMode.active()"
+      [attr.aria-pressed]="editMode.active()"
+      [title]="editMode.active() ? 'Leave edit mode' : 'Edit this site in place'"
+      (click)="editMode.toggle()"
+    >
+      <app-icon name="edit" width="1.1em" height="1.1em"></app-icon>
+      <span class="label">{{ editMode.active() ? 'Editing' : 'Edit' }}</span>
+    </button>
+  }
+
   @if (upNode(); as up) {
     <a class="header-icon-btn" [href]="up.url" [title]="'Back to ' + up.label">
       <app-icon name="arrow_back" width="1.3em" height="1.3em"></app-icon>
@@ -98,19 +112,6 @@
     </a>
 
     @if (isLoggedIn()) {
-      @if (isAdmin()) {
-        <button
-          type="button"
-          class="nav-edit-toggle"
-          [class.active]="editMode.active()"
-          [attr.aria-pressed]="editMode.active()"
-          [title]="editMode.active() ? 'Leave edit mode' : 'Edit this site in place'"
-          (click)="editMode.toggle()"
-        >
-          <app-icon name="edit" width="1.1em" height="1.1em"></app-icon>
-          <span class="label">{{ editMode.active() ? 'Editing' : 'Edit' }}</span>
-        </button>
-      }
       <app-profile-menu></app-profile-menu>
     }
   </div>
