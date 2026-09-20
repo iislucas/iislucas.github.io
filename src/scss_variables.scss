@@ -123,8 +123,13 @@ $modal-max-height: 90vh;
 $theme-chip-bg-color: var(--separator-bg);
 $theme-chip-border-color: #d6dae0; // LITERAL: see the note on $border-color-light
 
-$theme-tag-bg-color: var(--highlight-bg);
-$theme-tag-border-color: var(--highlight-border);
+// One tinted surface, shared by tag chips and the edit-mode banner: anything
+// that is a small panel set slightly apart from the page.
+$tint-bg: var(--tint-bg);
+$tint-border: var(--tint-border);
+
+$theme-tag-bg-color: $tint-bg;
+$theme-tag-border-color: $tint-border;
 
 // Highlight badges, active chips & stage checkmarks (the theme's lighter blue)
 $highlight-tag-bg: var(--highlight-bg);
@@ -183,8 +188,6 @@ $primary-color: var(--accent);
 // ============================================================================
 $edit-hover-outline: var(--text-placeholder);
 $edit-selected-outline: var(--accent);
-$edit-banner-bg: #fff8e1;
-$edit-banner-border: #f0c36d;
 
 // Hover affordance for anything tappable in edit mode.
 @mixin editable-hover {

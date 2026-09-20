@@ -110,7 +110,8 @@ exactly this reason — see *Vendored components* below.
 | **Text** | `$text-primary`, `$text-secondary`, `$text-muted`, `$text-placeholder` | Heading, body, label, metadata |
 | **Borders** | `$border-color-light`, `$separator-color` | Input borders, card outlines, dividers |
 | **Radii** | `$radius-sm`, `$radius-card` | Buttons, chips, menus; cards and panels |
-| **Highlight** | `$highlight-tag-bg`, `$highlight-tag-border`, `$highlight-tag-text` | Selection, hover tints, chips |
+| **Tint** | `$tint-bg`, `$tint-border` | The one tinted surface: tag chips and the edit-mode banner. Anything that is a small panel set slightly apart from the page |
+| **Highlight** | `$highlight-tag-bg`, `$highlight-tag-border`, `$highlight-tag-text` | Selection, hover tints, badges |
 | **Errors** | `$theme-error-*`, `$danger-color` | Error containers — deliberately outside the theme system, so an error looks like an error in every theme |
 | **Layout** | `$max-main-width`, `$card-padding`, `$card-sep` | Content width caps, card spacing |
 
@@ -338,6 +339,13 @@ Use a standardised **row-highlight** pattern for clickable list items: a colored
 Apply both mixins unconditionally on a detail page header to make it look permanently "selected", visually connecting it back to the list the user came from.
 
 ### Chips
+
+`.tag-chip` is the base: the shared tint, outline and foreground. Pair it with
+`.chip-link` when the chip is a link — that is the one style for a chip that
+navigates, and it should not be re-rolled per page. `.tag-chip` states its own
+`color` on purpose, so a chip reads the same whether it is rendered as a
+`<span>`, an `<a>` or a filter `<button>`, each of which would otherwise
+inherit a different text colour.
 
 Define all chips globally (e.g. `.tag-chip`, `.identifier-chip`, `.email-chip`, `.missing-identifier-chip` with a dashed border, and `.active-tag-chip` + `.tag-clear-btn` for dismissible filter chips). Wrap multiple chips in a flex container with `flex-wrap: wrap` and a small `gap`.
 

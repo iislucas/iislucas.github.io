@@ -225,13 +225,6 @@
     color: $header-text-color;
     background-color: $header-hover-bg;
   }
-
-  &.active,
-  &.active:hover {
-    color: $text-primary;
-    background-color: $edit-banner-bg;
-    border-color: $edit-banner-border;
-  }
 }
 
 // On a phone: an icon-only edit toggle, so the menu button, the trail and the
