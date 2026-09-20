@@ -12,8 +12,18 @@
  *
  * Where you can go is behind the hamburger, as in ilc-members-manager, rather
  * than in tabs along the bar — which leaves the bar to say one thing. Unlike
- * upstream, the button is on every page and not just the home page: this menu
- * is the whole of the site's navigation, so it always has to be reachable.
+ * upstream, the button is on every page and not just the home page: the menu
+ * has to stay reachable from everywhere.
+ *
+ * The edit-mode banner is part of this component rather than the page below
+ * it, so that it slots between the bar and the tabs: the tabs hang off the
+ * bottom of the whole header, banner included, instead of being pushed away
+ * from the bar by it.
+ *
+ * The site's two sections also appear as pill tabs hanging off the bottom of
+ * the header, again as upstream does it. They show on the two section pages
+ * themselves and not on a single concept, which sits a level below them and
+ * has the trail and the back button to get out with.
  *
  * Signing in is only ever for the site's editor, so it is not advertised: the
  * "Sign in" entry is tucked at the bottom of the menu and disappears once you
@@ -35,6 +45,7 @@ import { IconComponent } from '../icons/icon.component';
 import { ProfileMenuComponent } from '../profile-menu/profile-menu';
 import { EditModeService } from '../edit-mode/edit-mode.service';
 import { NavigationTreeService } from '../navigation-tree';
+import { EditModeBannerComponent } from '../edit-mode/edit-mode-banner/edit-mode-banner';
 import { isShared, sharePage } from '../share-page';
 
 // How long the share button stays on its "done" tick before going back.
@@ -43,7 +54,7 @@ const COPIED_FEEDBACK_MS = 2000;
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [IconComponent, ProfileMenuComponent],
+  imports: [IconComponent, ProfileMenuComponent, EditModeBannerComponent],
   templateUrl: './header.html',
   styleUrl: './header.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -80,6 +91,14 @@ export class HeaderComponent {
   protected isConceptsSection = computed(() => {
     const view = this.currentView();
     return view === Views.Concepts || view === Views.ConceptView;
+  });
+
+  // The tabs are for moving between the two sections, so they belong on the
+  // section pages. A single concept is below the gallery rather than beside
+  // it, and showing them there would make it look like a third section.
+  protected showSectionTabs = computed(() => {
+    const view = this.currentView();
+    return view === Views.Home || view === Views.Concepts;
   });
 
   // The menu closes on its own when something in it is chosen; the click then

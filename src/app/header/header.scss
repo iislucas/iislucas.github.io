@@ -3,6 +3,11 @@
 
 .nav-bar {
   position: relative;
+  // Above the banner (20) and the tab strip (5) so both look like they come
+  // out from under it. This also makes the bar a stacking context, which is
+  // fine: the menus inside it only ever need to sit above each other, and the
+  // whole context is above everything the header drops below itself.
+  z-index: 30;
   display: flex;
   align-items: center;
   gap: 0.75em;
@@ -219,13 +224,6 @@
   &:hover {
     color: $header-text-color;
     background-color: $header-hover-bg;
-  }
-
-  &.active,
-  &.active:hover {
-    color: $text-primary;
-    background-color: $edit-banner-bg;
-    border-color: $edit-banner-border;
   }
 }
 

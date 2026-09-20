@@ -39,13 +39,22 @@ export enum Views {
  * There are no edit pages: an admin edits content in place, in edit mode (see
  * edit-mode/edit-mode.service.ts), so every route here is public.
  */
+// Edit mode is a property of the visit rather than of a page, so every route
+// carries it: see EDIT_URL_PARAM and edit-mode.service.ts. Keeping it in the
+// URL is what lets a reload come back into edit mode rather than dropping out
+// of it mid-change.
+export const EDIT_URL_PARAM = 'edit';
+
 export const initPathPatterns = {
-  [Views.Home]: pathPattern``,
+  [Views.Home]: addUrlParams(pathPattern``, [EDIT_URL_PARAM]),
   // `q` is the gallery's free-text filter, `tag` the selected tag. Both are
   // persisted in the URL so a filtered gallery can be linked to and returned to.
-  [Views.Concepts]: addUrlParams(pathPattern`concepts`, ['q', 'tag']),
-  [Views.ConceptView]: pathPattern`concepts/${pv('slug')}`,
-  [Views.Login]: addUrlParams(pathPattern`login`, [{ name: 'returnUrl', ephemeral: true }]),
+  [Views.Concepts]: addUrlParams(pathPattern`concepts`, ['q', 'tag', EDIT_URL_PARAM]),
+  [Views.ConceptView]: addUrlParams(pathPattern`concepts/${pv('slug')}`, [EDIT_URL_PARAM]),
+  [Views.Login]: addUrlParams(pathPattern`login`, [
+    { name: 'returnUrl', ephemeral: true },
+    EDIT_URL_PARAM,
+  ]),
 };
 
 export type AppPathPatterns = typeof initPathPatterns;

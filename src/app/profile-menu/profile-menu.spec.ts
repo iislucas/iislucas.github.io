@@ -7,6 +7,8 @@ import {
   FirebaseStateService,
   SiteUser,
 } from '../firebase-state.service';
+import { RoutingService } from '../routing.service';
+import { ROUTING_CONFIG, initPathPatterns } from '../app.config';
 import { ThemeService } from '../theme/theme.service';
 import { DEFAULT_THEME, Theme, THEME_OPTIONS } from '../theme/theme';
 
@@ -47,6 +49,10 @@ describe('ProfileMenuComponent appearance picker', () => {
       providers: [
         provideZonelessChangeDetection(),
         { provide: FirebaseStateService, useValue: firebaseState },
+        // The menu's edit-mode entry reaches EditModeService, which mirrors
+        // edit mode into the URL and so needs a router.
+        RoutingService,
+        { provide: ROUTING_CONFIG, useValue: { validPathPatterns: initPathPatterns } },
       ],
     });
 

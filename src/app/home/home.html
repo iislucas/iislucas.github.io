@@ -83,7 +83,7 @@
                     [value]="link.label"
                     [commit]="linkCommit($index, 'label')"
                   >
-                    <span class="tag-chip profile-link">{{ link.label || link.url }}</span>
+                    <span class="tag-chip chip-link">{{ link.label || link.url }}</span>
                   </app-editable-field>
                   <app-editable-field
                     [fieldId]="'link.' + $index + '.url'"
@@ -97,7 +97,7 @@
                   </app-editable-field>
                 </app-editable-list-item>
               } @else {
-                <a class="tag-chip profile-link" [href]="link.url" target="_blank" rel="noopener">
+                <a class="tag-chip chip-link" [href]="link.url" target="_blank" rel="noopener">
                   {{ link.label || link.url }}
                   <app-icon name="launch" width="0.9em" height="0.9em"></app-icon>
                 </a>
@@ -138,7 +138,7 @@
             >
           </h2>
           @if (scholarHref(); as href) {
-            <a class="tag-chip papers-scholar-link" [href]="href" target="_blank" rel="noopener">
+            <a class="tag-chip chip-link" [href]="href" target="_blank" rel="noopener">
               all publications
               <app-icon name="launch" width="0.9em" height="0.9em"></app-icon>
             </a>
@@ -261,7 +261,7 @@
                   <div class="paper-links">
                     @for (link of entry.links; track link.url) {
                       <a
-                        class="tag-chip paper-link"
+                        class="tag-chip chip-link"
                         [href]="link.url"
                         target="_blank"
                         rel="noopener"

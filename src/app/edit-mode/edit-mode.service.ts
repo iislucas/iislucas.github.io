@@ -17,11 +17,37 @@
  * keeps an undo history for the session: each entry knows how to put back what
  * it replaced. A field's undo button takes back that field's latest change;
  * the edit-mode banner takes back the latest change of any kind.
+ *
+ * Whether edit mode is on is mirrored into the URL as `?edit=1`, on whichever
+ * route is matched (see EDIT_URL_PARAM in app.config.ts). A reload therefore
+ * comes back into edit mode rather than dropping out of it, which matters
+ * because reloading mid-edit used to mean losing the mode and having to find
+ * your place again.
+ *
+ * The switch below stays the source of truth and the URL follows it, rather
+ * than the other way round: that keeps edit mode across in-app navigation,
+ * where each route has its own copy of the parameter. The exception is a value
+ * arriving from outside — the first matched route of a visit, a reload, or the
+ * back button — which the switch adopts instead.
  */
 
-import { computed, inject, Injectable, signal } from '@angular/core';
+import {
+  computed,
+  effect,
+  inject,
+  Injectable,
+  signal,
+  untracked,
+  WritableSignal,
+} from '@angular/core';
 import { FirebaseStateService } from '../firebase-state.service';
 import { SaveResult } from '../content.service';
+import { RoutingService } from '../routing.service';
+import { AppPathPatterns, EDIT_URL_PARAM } from '../app.config';
+
+// What the parameter reads when edit mode is on. Anything else counts as off,
+// so a stray `?edit=yes` does not silently enable it.
+const EDIT_ON = '1';
 
 export interface UndoEntry {
   // Identifies what changed, so a field can find its own entries; list-level
@@ -36,12 +62,53 @@ export interface UndoEntry {
 @Injectable({ providedIn: 'root' })
 export class EditModeService {
   private firebaseState = inject(FirebaseStateService);
+  private routing: RoutingService<AppPathPatterns> = inject(RoutingService);
 
   private switchedOn = signal(false);
 
   // Edit mode only ever applies to an admin: signing out, or losing admin
-  // access, turns it off without anyone having to remember to.
+  // access, turns it off without anyone having to remember to. A URL carrying
+  // ?edit=1 therefore does nothing for a visitor.
   public active = computed(() => this.switchedOn() && this.firebaseState.isAdmin());
+
+  /**
+   * The `edit` parameter of whichever route is matched, or null when the URL
+   * matches none. The routing service types its signals per route, so reaching
+   * the same parameter across all of them is necessarily dynamic.
+   */
+  private editParam = computed<WritableSignal<string> | null>(() => {
+    const view = this.routing.matchedPatternId();
+    if (!view) return null;
+    const params = this.routing.signals[view].urlParams as unknown as Record<
+      string,
+      WritableSignal<string>
+    >;
+    return params[EDIT_URL_PARAM] ?? null;
+  });
+
+  // The last value this service put in the URL. A parameter that differs from
+  // it changed somewhere else — the page was loaded or reloaded, or the back
+  // button was pressed — and is adopted rather than overwritten.
+  private lastWritten: string | null = null;
+
+  constructor() {
+    effect(() => {
+      const param = this.editParam();
+      if (!param) return;
+
+      const inUrl = param();
+      const wanted = this.switchedOn() ? EDIT_ON : '';
+
+      if (inUrl !== this.lastWritten && inUrl !== wanted) {
+        this.lastWritten = inUrl;
+        untracked(() => this.setActive(inUrl === EDIT_ON));
+        return;
+      }
+
+      this.lastWritten = wanted;
+      if (inUrl !== wanted) untracked(() => param.set(wanted));
+    });
+  }
 
   // The field whose inline editor is open, or null.
   public openFieldId = signal<string | null>(null);

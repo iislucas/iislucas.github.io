@@ -8,6 +8,8 @@ import {
   FirebaseStateService,
   SiteUser,
 } from '../../firebase-state.service';
+import { RoutingService } from '../../routing.service';
+import { ROUTING_CONFIG, initPathPatterns } from '../../app.config';
 
 describe('EditableListItemComponent', () => {
   let fixture: ComponentFixture<EditableListItemComponent>;
@@ -27,6 +29,9 @@ describe('EditableListItemComponent', () => {
       providers: [
         provideZonelessChangeDetection(),
         { provide: FirebaseStateService, useValue: firebaseState },
+        // EditModeService mirrors edit mode into the URL, so it needs a router.
+        RoutingService,
+        { provide: ROUTING_CONFIG, useValue: { validPathPatterns: initPathPatterns } },
       ],
     }).compileComponents();
 

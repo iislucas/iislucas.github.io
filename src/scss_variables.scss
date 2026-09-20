@@ -58,6 +58,14 @@ $brand-red: var(--accent); // Back-compat alias (ilc-members-manager components)
 $header-bg-color: var(--chrome-bg);
 $header-text-color: var(--chrome-text);
 $header-muted-text: var(--chrome-muted-text); // Breadcrumb trail above the page title
+$tab-track-bg: var(--tab-track-bg); // The strip the section tabs sit on
+
+// Primary buttons take the nav bar's colour, so the strongest action on a page
+// belongs to the same family as the site's chrome. The two darker steps are
+// mixed from it rather than being seven more hand-picked values per theme,
+// which also means they follow any change to the bar automatically.
+$chrome-hover-shade: color-mix(in srgb, var(--chrome-bg) 88%, #000);
+$chrome-active-shade: color-mix(in srgb, var(--chrome-bg) 78%, #000);
 $header-hover-bg: var(--chrome-hover-bg); // Nav link under the pointer
 $header-active-bg: var(--chrome-active-bg); // The nav link of the current page
 $footer-bg-color: var(--chrome-bg);
@@ -115,8 +123,13 @@ $modal-max-height: 90vh;
 $theme-chip-bg-color: var(--separator-bg);
 $theme-chip-border-color: #d6dae0; // LITERAL: see the note on $border-color-light
 
-$theme-tag-bg-color: var(--highlight-bg);
-$theme-tag-border-color: var(--highlight-border);
+// One tinted surface, shared by tag chips and the edit-mode banner: anything
+// that is a small panel set slightly apart from the page.
+$tint-bg: var(--tint-bg);
+$tint-border: var(--tint-border);
+
+$theme-tag-bg-color: $tint-bg;
+$theme-tag-border-color: $tint-border;
 
 // Highlight badges, active chips & stage checkmarks (the theme's lighter blue)
 $highlight-tag-bg: var(--highlight-bg);
@@ -175,8 +188,6 @@ $primary-color: var(--accent);
 // ============================================================================
 $edit-hover-outline: var(--text-placeholder);
 $edit-selected-outline: var(--accent);
-$edit-banner-bg: #fff8e1;
-$edit-banner-border: #f0c36d;
 
 // Hover affordance for anything tappable in edit mode.
 @mixin editable-hover {

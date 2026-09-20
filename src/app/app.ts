@@ -18,7 +18,6 @@ import { ConceptViewComponent } from './concept-view/concept-view';
 import { LoginComponent } from './login/login';
 import { NotFoundComponent } from './not-found/not-found';
 import { FooterComponent } from './footer/footer';
-import { EditModeBannerComponent } from './edit-mode/edit-mode-banner/edit-mode-banner';
 import { EditModeService } from './edit-mode/edit-mode.service';
 import { ThemeService } from './theme/theme.service';
 import { NavigationTreeService } from './navigation-tree';
@@ -35,7 +34,6 @@ import { APP_VERSION } from './version';
     LoginComponent,
     NotFoundComponent,
     FooterComponent,
-    EditModeBannerComponent,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',

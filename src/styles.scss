@@ -325,21 +325,22 @@ button.admin-button {
 .primary-button,
 a.primary-button,
 button.primary-button {
-  background-color: $heading-accent-color;
-  border: 1px solid $heading-accent-color;
+  background-color: $header-bg-color;
+  border: 1px solid $header-bg-color;
   color: #ffffff;
   font-weight: bold;
   box-shadow: none;
 
   &:hover {
-    background-color: $accent-hover-color;
-    border-color: $accent-hover-color;
+    background-color: $chrome-hover-shade;
+    border-color: $chrome-hover-shade;
     box-shadow: none;
     color: #ffffff;
   }
 
   &:active {
-    background-color: $accent-active-color;
+    background-color: $chrome-active-shade;
+    border-color: $chrome-active-shade;
     box-shadow: none;
     color: #ffffff;
   }
@@ -781,6 +782,30 @@ a.selectable-card {
   padding: 0.25em 0.5em;
   font-size: small;
   font-family: monospace;
+  // Stated here so every chip reads the same whether it is a span, a link or
+  // a filter button -- a <button> would otherwise take the button text colour
+  // and a bare <span> would inherit the body's.
+  color: $heading-accent-color;
+}
+
+// A tag chip that is also a link. This is the one style for that; do not
+// re-roll it per page. Use alongside .tag-chip.
+.chip-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  text-decoration: none;
+  color: $heading-accent-color;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    color: $accent-hover-color;
+    background-color: $menu-item-active-color;
+    border-color: $highlight-tag-border;
+  }
 }
 
 // ----------------------------------------------------------------------------
@@ -1201,7 +1226,12 @@ button.menu-item {
   align-items: center;
   gap: 0.35rem;
   padding: 0.3rem;
-  background: #e4e4e7;
+  background: $tab-track-bg;
+  // Outlined in the nav bar's own colour. Where the strip hangs off the bar
+  // the top border is dropped (see .header-extension-tabs), so the two read as
+  // one piece rather than as a box stuck underneath.
+  border: 1px solid $header-bg-color;
+  box-sizing: border-box;
   border-radius: 10px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -1225,12 +1255,14 @@ button.menu-item {
   font-size: 0.85rem;
   line-height: 1.25;
   font-weight: 500;
-  color: #71717a;
+  color: $text-secondary;
   border-radius: 8px;
   white-space: nowrap;
   box-shadow: none;
   text-align: center;
   box-sizing: border-box;
+  // Also used on <a> for section navigation, which must not be underlined.
+  text-decoration: none;
   -webkit-tap-highlight-color: transparent;
   outline: none;
 
@@ -1266,7 +1298,7 @@ button.menu-item {
   }
 
   &:hover {
-    color: #27272a;
+    color: $text-primary;
     background: rgba(255, 255, 255, 0.7);
     box-shadow: none;
   }
@@ -1274,7 +1306,7 @@ button.menu-item {
   &:active {
     transform: none;
     box-shadow: none;
-    color: #27272a;
+    color: $text-primary;
     background: rgba(255, 255, 255, 0.7);
   }
 
@@ -1288,8 +1320,8 @@ button.menu-item {
   }
 
   &.active {
-    background: white;
-    color: #18181b;
+    background: $theme-bg-color;
+    color: $text-primary;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
     font-weight: 600;
   }
@@ -1356,7 +1388,7 @@ button.menu-item {
   display: flex;
   justify-content: center;
   margin-top: 0;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.6rem;
   position: relative;
   z-index: 5;
   transform-origin: top center;
@@ -1632,29 +1664,26 @@ button.menu-item {
 //  Vendored markdown output
 //
 //  The markdown viewer comes from ilc-members-manager (src/app/markdown-editor,
-//  overwritten by `pnpm run sync:markdown-editor`), and paints links and
-//  blockquotes in that project's brand red with `!important`. Those are the
-//  links in the body of every page here, so they have to follow this site's
-//  accent instead.
+//  overwritten by `pnpm run sync:markdown-editor`), and paints its own text,
+//  links and rules with `!important` so they survive the host page's styles.
 //
-//  Overriding rather than editing the vendored file keeps the next sync clean.
-//  The doubled class is what lifts these rules above the vendored ones: those
-//  are emitted as `.markdown-viewer[_ngcontent-xyz] a`, whose hashed attribute
-//  cannot be named here, so the selector below has to out-specify it.
+//  It reads those values from `--md-*` custom properties, so theming it is a
+//  matter of setting them rather than out-specifying it. This used to be a
+//  doubled class and a pile of `!important` overrides fighting the vendored
+//  ones; the properties replaced that.
 // ----------------------------------------------------------------------------
 
-app-markdown-viewer .markdown-viewer.markdown-viewer {
-  a,
-  a:visited {
-    color: $heading-accent-color !important;
-  }
-
-  a:hover {
-    color: $accent-hover-color !important;
-  }
-
-  blockquote {
-    border-left-color: $heading-accent-color !important;
-    background: $separator-color !important;
-  }
+app-markdown-viewer,
+app-markdown-editor {
+  // Interpolated: a custom property's value is taken literally, so a bare
+  // `$variable` would be written out as the text "$variable".
+  --md-font-family: #{$font-body};
+  --md-text-color: #{$text-primary};
+  --md-link-color: #{$heading-accent-color};
+  --md-link-hover-color: #{$accent-hover-color};
+  --md-accent-color: #{$heading-accent-color};
+  --md-blockquote-bg: #{$separator-color};
+  --md-border-color: #{$border-color-light};
+  --md-code-bg: #{$separator-color};
+  --md-table-header-bg: #{$separator-color};
 }

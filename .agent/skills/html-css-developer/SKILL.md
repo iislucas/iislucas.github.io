@@ -30,8 +30,9 @@ Keep styling split into a small number of shared files:
 
 | File | Purpose |
 | --- | --- |
-| Variables file (e.g. `src/scss_variables.scss`) | All SCSS variables (colors, spacing, shadows) and shared mixins |
-| Global stylesheet (e.g. `src/styles.scss`) | Global styles: buttons, inputs, chips, menus, cards, errors |
+| Theme definitions (`src/scss_themes.scss`) | The one place colours, fonts and radii are written down, as a map of themes emitted as CSS custom properties |
+| Variables file (`src/scss_variables.scss`) | SCSS variable names, mostly pointing at those custom properties, plus shared mixins |
+| Global stylesheet (`src/styles.scss`) | Global styles: buttons, inputs, chips, menus, cards, errors |
 | Shared layout partials (e.g. `edit-form.scss`) | Layouts reused across several pages (e.g. forms) |
 
 ### Importing Variables and Styles
@@ -47,30 +48,78 @@ Keep styling split into a small number of shared files:
 
 ---
 
-## 3. Color Palette
+## 3. Colour and the Theme System
 
-All colors are defined as SCSS variables in the variables file. **Always use the variable name**, never hardcode a hex value that already has a variable.
+**Never write a hex value in a component.** Colours live in one place: the
+`$themes` map in `src/scss_themes.scss`. Each entry there becomes a block of
+CSS custom properties, selected by a `data-theme` attribute that
+`ThemeService` sets on `<html>`. `scss_variables.scss` then points the SCSS
+variable names at those properties, so components keep using `$text-primary`
+and pick up whichever theme is active for free.
 
-### Suggested Variable Groups
+```scss
+// scss_variables.scss — a pointer, not a value
+$text-primary: var(--text-primary);
+```
+
+### Adding or changing a theme
+
+1. Add an entry to `$themes` in `src/scss_themes.scss`, defining **every** key
+   — a missing key is an unset property, not an inherited one.
+2. Add the matching id to the `Theme` enum in `src/app/theme/theme.ts`.
+
+The default is named twice, as `$default-theme` and as `DEFAULT_THEME`, and
+nothing at compile time makes them agree. Tests in `theme.service.spec.ts`
+read the stylesheet and check both that, and that every enum member has a
+block. They exist because the two did drift apart once.
+
+### Custom property values need interpolation
+
+A custom property's value is taken literally, so a bare SCSS variable is
+written out as its own name:
+
+```scss
+// ❌ emits the text "$heading-accent-color"
+--md-link-color: $heading-accent-color;
+
+// ✅ emits "var(--accent)"
+--md-link-color: #{$heading-accent-color};
+```
+
+### Deriving a shade
+
+Prefer `color-mix()` over adding hand-picked values to every theme, so the
+shade follows whatever the theme does:
+
+```scss
+$chrome-hover-shade: color-mix(in srgb, var(--chrome-bg) 88%, #000);
+```
+
+Sass colour functions (`color.adjust`, `lighten`) **cannot** take a `var()`,
+so anything passed to one has to stay a literal. Two variables are literal for
+exactly this reason — see *Vendored components* below.
+
+### Variable Groups
 
 | Group | Example variables | Used For |
 | --- | --- | --- |
-| **Brand / Theme** | `$theme-bg-color`, `$theme-border-color`, `$heading-accent-color` | Header, footer, headings, card backgrounds |
-| **Buttons** | `$button-bg-color`, `$button-border-color`, `$button-text-color`, `$button-hover-bg-color`, `$button-active-bg-color` | All `<button>` element states |
-| **Shadows** | `$shadow-color`, `$shadow-color-hover`, `$shadow-color-active` | Box-shadow on buttons, cards |
-| **Chips / Tags** | `$theme-chip-bg-color`, `$theme-chip-border-color`, `$theme-tag-bg-color` | Small labelled badges |
-| **Text** | `$text-primary`, `$text-secondary`, `$text-muted`, `$text-placeholder` | Heading, body, label, and metadata text |
+| **Chrome** | `$header-bg-color`, `$header-text-color`, `$header-muted-text`, `$header-hover-bg` | Nav bar, footer, and anything meant to belong to them |
+| **Brand / Theme** | `$theme-bg-color`, `$surface-border`, `$heading-accent-color`, `$accent-hover-color` | Headings, links, cards |
+| **Buttons** | `$button-bg-color`, `$button-border-color`, `$button-hover-bg-color` | All `<button>` states |
+| **Tabs** | `$tab-track-bg` | The strip section tabs sit on |
+| **Text** | `$text-primary`, `$text-secondary`, `$text-muted`, `$text-placeholder` | Heading, body, label, metadata |
 | **Borders** | `$border-color-light`, `$separator-color` | Input borders, card outlines, dividers |
-| **Errors** | `$theme-error-text-color`, `$theme-error-bg-color`, `$theme-error-border-color` | Error containers |
-| **Focus** | `$focus-ring-color` | Input focus rings, active tab indicators |
-| **Lists** | `$row-border-color`, `$row-highlight-bg`, `$row-highlight-border` | Row borders, hover/selection highlighting |
+| **Radii** | `$radius-sm`, `$radius-card` | Buttons, chips, menus; cards and panels |
+| **Tint** | `$tint-bg`, `$tint-border` | The one tinted surface: tag chips and the edit-mode banner. Anything that is a small panel set slightly apart from the page |
+| **Highlight** | `$highlight-tag-bg`, `$highlight-tag-border`, `$highlight-tag-text` | Selection, hover tints, badges |
+| **Errors** | `$theme-error-*`, `$danger-color` | Error containers — deliberately outside the theme system, so an error looks like an error in every theme |
 | **Layout** | `$max-main-width`, `$card-padding`, `$card-sep` | Content width caps, card spacing |
-
----
 
 ## 4. Typography
 
-- Use a simple system font stack (e.g. `Arial, Helvetica, sans-serif`) set once on `body`.
+- The font stack, base size and line height come from the theme (`$font-body`,
+  `$font-size-base`, `$line-height-base`) and are set once on `body`. Do not
+  set `font-family` in a component.
 - Use `monospace` for identifiers, emails, tags, and timestamps.
 - Prefer relative sizes (`em`, `rem`, `small`, `large`).
 - Set heading colors globally — do not redefine heading colors in component styles.
@@ -175,7 +224,7 @@ Style all `<button>` elements globally. **Do not re-style buttons in component s
 | Class | Purpose | When to Use |
 | --- | --- | --- |
 | _(no class)_ | Default button | Standard actions (Save, Submit) |
-| `.primary-button` | Brand accent background, bold white text | High-priority CTAs (Pay, Checkout, Sign up) |
+| `.primary-button` | Nav bar's colour, bold white text | High-priority CTAs (Save, Done, Sign in) |
 | `.icon-only-button` | Circular, transparent, icon-only | Dismiss, toggle, inline actions |
 | `.round-button` | Fully circular with padding | Floating actions |
 | `.delete-button` | Neutral by default, red on hover | Destructive actions |
@@ -187,8 +236,12 @@ Style all `<button>` elements globally. **Do not re-style buttons in component s
 > If you find yourself writing `background-color`, `border`, `box-shadow`, or `border-radius` for a button in a component stylesheet, **stop** — you almost certainly should be using a global class instead. **Never introduce new custom button styles** in component styles.
 
 > [!WARNING]
-> **NO BLACK OR ARBITRARY BLUE BACKGROUNDS FOR PRIMARY CALL-TO-ACTION BUTTONS**
-> Primary call-to-action buttons must use the `.primary-button` style: the brand accent color with bold white text.
+> **NO BLACK OR ARBITRARY COLOURED BACKGROUNDS FOR PRIMARY CALL-TO-ACTION BUTTONS**
+> Primary call-to-action buttons must use the `.primary-button` style, which
+> takes the nav bar's own colour (`$header-bg-color`) with bold white text, so
+> the strongest action on a page belongs to the same family as the site's
+> chrome. Its hover and pressed shades are mixed from that colour, so they
+> follow the theme without anyone maintaining them.
 
 > [!WARNING]
 > **NO SPINNERS INSIDE BUTTONS (ANTI-PATTERN)**
@@ -234,7 +287,21 @@ Use one common note/banner style for informational callouts: a neutral light gre
 
 ### Pill Tabs
 
-For in-page tab navigation, use a global pill-tab system: tabs sit on a tinted track; the active tab pops out with a white background and subtle shadow. **Do not define local tab styles in components.** Where possible, sync the active tab to a URL parameter so tabs are deep-linkable.
+Tabs sit on a tinted track (`$tab-track-bg`) outlined in the nav bar's colour;
+the active tab pops out with the surface colour and a subtle shadow. **Do not
+define local tab styles in components.**
+
+Two uses, and they differ:
+
+- **In-page tabs** switch a view within a page. Use `<button class="pill-tab">`
+  and, where possible, sync the active tab to a URL parameter so tabs are
+  deep-linkable.
+- **Section navigation** moves between routes. Wrap the strip in
+  `.header-extension-tabs` so it hangs off the bottom of the nav bar, and use
+  real `<a href>` elements so middle-click and open-in-new-tab keep working.
+
+Set `data-label` to the tab's text in both cases: a hidden bold copy reserves
+the active width, so the strip does not shift as the active tab changes.
 
 ```html
 <div class="pill-tabs">
@@ -272,6 +339,13 @@ Use a standardised **row-highlight** pattern for clickable list items: a colored
 Apply both mixins unconditionally on a detail page header to make it look permanently "selected", visually connecting it back to the list the user came from.
 
 ### Chips
+
+`.tag-chip` is the base: the shared tint, outline and foreground. Pair it with
+`.chip-link` when the chip is a link — that is the one style for a chip that
+navigates, and it should not be re-rolled per page. `.tag-chip` states its own
+`color` on purpose, so a chip reads the same whether it is rendered as a
+`<span>`, an `<a>` or a filter `<button>`, each of which would otherwise
+inherit a different text colour.
 
 Define all chips globally (e.g. `.tag-chip`, `.identifier-chip`, `.email-chip`, `.missing-identifier-chip` with a dashed border, and `.active-tag-chip` + `.tag-clear-btn` for dismissible filter chips). Wrap multiple chips in a flex container with `flex-wrap: wrap` and a small `gap`.
 
@@ -350,7 +424,73 @@ transition: transform 0.2s, box-shadow 0.2s;
 
 ---
 
-## 10. Common Pitfalls
+## 10. The Header, and Stacking Order
+
+The nav bar is one assembly, rendered by the header component: the bar itself,
+then the edit-mode banner, then the section tab strip. Anything that should
+appear to come *out from under* the bar has to be both later in the DOM and
+lower in stacking order.
+
+| Layer | `z-index` | Why |
+| --- | --- | --- |
+| Menus inside the bar (`.menu-style`) | 100 | Above everything the header drops |
+| Click-away overlay (`.menu-overlay`) | 50 | Above the page, below the menu it closes |
+| `.nav-bar` | 30 | Above the banner and the tabs, so both unfold from under it |
+| Edit-mode banner | 20 | Below the bar, above the tabs |
+| `.header-extension-tabs` | 5 | Lowest: it slides down from behind everything |
+
+`.nav-bar` carries a `z-index`, which makes it a stacking context. That is
+fine, and deliberate: the menus inside it only ever need to sit above each
+other, and the whole context sits above what the header drops below itself.
+
+The page title is centred on the **bar**, not on the space between the
+controls, so it is positioned absolutely rather than left in the flex flow. It
+sets `pointer-events: none` so clicks fall through to the controls beneath its
+edges; its links opt back in.
+
+## 11. Edit Mode
+
+Editable content gets a faint dashed outline on hover, and on the open or
+selected element **one** dashed ring a shade darker, lifted with a soft
+shadow. Use the `editable-hover` and `editable-selected` mixins.
+
+Deliberately one line and no more: an open field used to stack a solid
+outline, a gap, and the editor's own border inside it, which read as three
+nested boxes. If you put a bordered component inside an editable field, turn
+its border off.
+
+## 12. Vendored Components
+
+`src/app/markdown-editor/`, `src/app/image-upload-preview/` and
+`src/app/icons/` are vendored from ilc-members-manager and **overwritten** by
+`pnpm run sync:markdown-editor`. Never style them by editing those files: the
+change is lost on the next sync.
+
+Theme the rendered markdown by setting its custom properties instead, which
+needs no `!important` and no specificity contest:
+
+```scss
+app-markdown-viewer,
+app-markdown-editor {
+  --md-link-color: #{$heading-accent-color};
+  --md-font-family: #{$font-body};
+}
+```
+
+Available: `--md-font-family`, `--md-text-color`, `--md-link-color`,
+`--md-link-hover-color`, `--md-accent-color`, `--md-blockquote-bg`,
+`--md-border-color`, `--md-code-bg`, `--md-table-header-bg`.
+
+> [!IMPORTANT]
+> `$border-color-light` and `$theme-chip-border-color` **must stay literal hex
+> values**. The vendored editor passes them to `color.adjust()`, which cannot
+> take a `var()`. Turning either into a custom property breaks the build.
+
+If a vendored component needs a behavioural or styling change that no property
+covers, fix it upstream in ilc-members-manager and sync, rather than patching
+the copy here.
+
+## 13. Common Pitfalls
 
 ### SCSS `@use` Does NOT Copy CSS Rules
 
@@ -380,6 +520,20 @@ If the global `button` selector applies a default `box-shadow`, any `<button>` w
 - For padded subtle actions: use `.subtle-button`.
 - Never invent a new button class in component styles.
 
+### An Empty `cssRules` List Is Truthy
+
+When walking stylesheets to debug which rule wins, `rule.cssRules` exists and
+is truthy on an ordinary style rule. Checking `if (rule.cssRules)` before
+reading `rule.selectorText` silently skips every rule you care about. Test
+`rule.cssRules.length`.
+
+### Colour Transitions Hide Behind `getComputedStyle`
+
+Links and buttons carry `transition: color 0.15s`. Reading a colour
+immediately after changing a theme returns a value part-way through the
+animation, which looks like the change did not apply. Let it settle before
+believing the number.
+
 ### Avoid These
 
 - ❌ `height: 100%` / `width: 100%` — prefer flexbox `flex-grow: 1` and `align-items: stretch`
@@ -391,7 +545,7 @@ If the global `button` selector applies a default `box-shadow`, any `<button>` w
 
 ---
 
-## 11. Checklist for HTML/CSS Changes
+## 14. Checklist for HTML/CSS Changes
 
 Before submitting any styling change:
 
@@ -408,3 +562,7 @@ Before submitting any styling change:
 11. **Positive action buttons**: Do CTA buttons use the brand accent `.primary-button` style, and NEVER solid black backgrounds?
 12. **No accidental button drop-shadows**: Do inline text buttons, toggles, and secondary actions use `.inline-link-button` or `.subtle-button` rather than an unclassed `<button>` inheriting the global `box-shadow`?
 13. **Links**: Are external links blue and underlined, and internal links never blue?
+14. **No hex values**: Is every colour a variable? A literal hex in a component means it will ignore the theme.
+15. **Custom properties**: Did you wrap SCSS variables in `#{...}` when assigning them to a `--custom-property`?
+16. **Vendored files**: Did you avoid editing `src/app/markdown-editor/` (and friends), theming via `--md-*` instead?
+17. **Stacking**: If you added something to the header, does its `z-index` fit the table in section 10?
