@@ -11,7 +11,7 @@
  * writing, and records an undo for the list operations it performs itself.
  */
 
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ContentService, SaveResult } from '../content.service';
 import { FirebaseStateService } from '../firebase-state.service';
 import { MarkdownViewer } from '../markdown-editor/markdown-viewer';
@@ -35,7 +35,18 @@ import {
 } from '../edit-mode/editable-field/editable-field';
 import { EditableImageComponent, ImageUrls } from '../edit-mode/editable-image/editable-image';
 import { EditableListItemComponent } from '../edit-mode/editable-list-item/editable-list-item';
-import { insertAt, moveItem, removeAt, replaceAt } from '../edit-mode/list-ops';
+import {
+  EditableLinkChipComponent,
+  LINK_DRAG_TYPE,
+} from '../edit-mode/editable-link-chip/editable-link-chip';
+import {
+  insertAt,
+  moveItem,
+  moveTo,
+  positionForDropSlot,
+  removeAt,
+  replaceAt,
+} from '../edit-mode/list-ops';
 import { uploadImage } from '../image-storage';
 
 // How many concepts the landing page previews before sending you to the gallery.
@@ -71,6 +82,7 @@ const NEW_LINK_LABEL = 'New link';
     EditableFieldComponent,
     EditableImageComponent,
     EditableListItemComponent,
+    EditableLinkChipComponent,
   ],
   templateUrl: './home.html',
   styleUrl: './home.scss',
@@ -171,16 +183,46 @@ export class HomeComponent {
     });
   }
 
-  /** Writes one field of one link. */
-  protected linkCommit(index: number, field: keyof ProfileLink) {
-    return this.cachedCommit(`link.${index}.${field}`, () => (value) => {
-      const links = this.profile().links;
-      const link = links[index];
-      if (!link) return Promise.resolve(staleEntry('link'));
-      return this.content.updateProfile({
-        links: replaceAt(links, index, { ...link, [field]: value }),
-      });
-    });
+  /**
+   * Writes both halves of a link at once. The chip's popover edits the text
+   * and the URL together, so they are saved together: a label and the address
+   * it describes should never be a step apart.
+   */
+  protected saveLink(index: number, link: ProfileLink) {
+    const links = this.profile().links;
+    if (!links[index]) return;
+    this.writeList(ProfileList.Links, replaceAt(links, index, link), 'Edit link');
+  }
+
+  /** The slot a dragged chip is currently hovering, or null. */
+  protected dropIndex = signal<number | null>(null);
+
+  protected onSlotDragOver(index: number, event: DragEvent) {
+    if (!event.dataTransfer?.types.includes(LINK_DRAG_TYPE)) return;
+    // Without this the browser refuses the drop and plays the "snap back"
+    // animation instead.
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    this.dropIndex.set(index);
+  }
+
+  protected onSlotDragLeave(index: number) {
+    if (this.dropIndex() === index) this.dropIndex.set(null);
+  }
+
+  protected onSlotDrop(index: number, event: DragEvent) {
+    event.preventDefault();
+    this.dropIndex.set(null);
+    const from = Number(event.dataTransfer?.getData(LINK_DRAG_TYPE));
+    if (!Number.isInteger(from)) return;
+    this.reorderLink(from, index);
+  }
+
+  /** Moves a link to the slot it was dropped on. */
+  protected reorderLink(from: number, slot: number) {
+    const to = positionForDropSlot(from, slot);
+    if (to === null) return;
+    this.writeList(ProfileList.Links, moveTo(this.profile().links, from, to), 'Move link');
   }
 
   protected movePaper(index: number, delta: number) {
@@ -205,11 +247,6 @@ export class HomeComponent {
     if (result.success) this.startEditing(`paper.${index}`, `paper.${index}.title`);
   }
 
-  protected moveLink(index: number, delta: number) {
-    this.writeList(ProfileList.Links, moveItem(this.profile().links, index, delta), 'Move link');
-    this.editMode.selectedItemId.set(`link.${index + delta}`);
-  }
-
   protected removeLink(index: number) {
     this.writeList(ProfileList.Links, removeAt(this.profile().links, index), 'Delete link');
   }
@@ -221,7 +258,8 @@ export class HomeComponent {
       insertAt(this.profile().links, index, link),
       'Add link',
     );
-    if (result.success) this.startEditing(`link.${index}`, `link.${index}.label`);
+    // Open the new chip's popover so the text and URL can be filled in at once.
+    if (result.success) this.editMode.openFieldId.set(`profile.link.${index}`);
   }
 
   // Selects a just-added entry and opens its first field, text selected, so

@@ -1,0 +1,69 @@
+@if (editMode.active()) {
+  <div class="chip-shell" [class.dragging]="isDragging()" [class.open]="isOpen()">
+    <span
+      class="tag-chip chip-link chip-editable"
+      role="button"
+      tabindex="0"
+      [attr.title]="'Edit ' + shownText()"
+      [draggable]="dragArmed()"
+      (click)="open($event)"
+      (keydown.enter)="open($any($event))"
+      (dragstart)="onDragStart($any($event))"
+      (dragend)="onDragEnd()"
+    >
+      <!-- The grip is drawn in CSS: the icon set is vendored, so adding a
+           drag_indicator to it would be lost on the next sync. -->
+      <span class="drag-handle" title="Drag to reorder" aria-hidden="true" (mousedown)="armDrag()">
+      </span>
+      <span class="chip-text">{{ shownText() }}</span>
+    </span>
+
+    @if (isOpen()) {
+      <!-- Both halves of the link together: a label edited without its URL in
+           view is how a chip ends up pointing somewhere else. -->
+      <div class="link-popover" (keydown)="onKeydown($any($event))">
+        <label class="link-field">
+          <span class="link-field-label">Text</span>
+          <input
+            #labelInput
+            type="text"
+            class="edit-input"
+            placeholder="What the link is called"
+            [value]="draftLabel()"
+            (input)="draftLabel.set($any($event.target).value)"
+          />
+        </label>
+
+        <label class="link-field">
+          <span class="link-field-label">URL</span>
+          <input
+            type="url"
+            class="edit-input"
+            placeholder="https://…"
+            [value]="draftUrl()"
+            (input)="draftUrl.set($any($event.target).value)"
+          />
+        </label>
+
+        <div class="link-popover-actions">
+          <button
+            type="button"
+            class="delete-button"
+            title="Delete this link"
+            (click)="remove.emit()"
+          >
+            <app-icon name="delete" width="1em" height="1em"></app-icon>
+          </button>
+          <span class="spacer"></span>
+          <button type="button" class="subtle-button" (click)="close()">Cancel</button>
+          <button type="button" class="primary-button" (click)="accept()">Save</button>
+        </div>
+      </div>
+    }
+  </div>
+} @else {
+  <a class="tag-chip chip-link" [href]="link().url" target="_blank" rel="noopener">
+    {{ shownText() }}
+    <app-icon name="launch" width="0.9em" height="0.9em"></app-icon>
+  </a>
+}

@@ -127,7 +127,7 @@ describe('HeaderComponent', () => {
   it('offers the two sections as tabs under the bar', () => {
     const tabs = sectionTabs();
 
-    expect(tabs.map((tab) => tab.textContent?.trim())).toEqual(['About Lucas', 'Concept Gallery']);
+    expect(tabs.map((tab) => tab.textContent?.trim())).toEqual(['About', 'Concept Gallery']);
     // Real links, so they can be opened in a new tab like any other navigation.
     expect(tabs.map((tab) => tab.getAttribute('href'))).toEqual(['/', '/concepts']);
     // At the root, the first tab is the one you are on.

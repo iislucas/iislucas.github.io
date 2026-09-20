@@ -1,0 +1,132 @@
+@use '../../../scss_variables' as *;
+
+:host {
+  display: inline-flex;
+  position: relative;
+}
+
+.chip-shell {
+  position: relative;
+  display: inline-flex;
+
+  // Above its neighbours while the popover is open, so the panel is not
+  // clipped by the chips that follow it in the row.
+  &.open {
+    z-index: 2;
+  }
+
+  &.dragging .chip-editable {
+    opacity: 0.4;
+  }
+}
+
+// The chip as it looks in edit mode: the same chip, plus a grip and the
+// dashed ring that says it can be tapped.
+.chip-editable {
+  cursor: pointer;
+  user-select: none;
+  @include editable-hover;
+
+  .chip-shell.open & {
+    @include editable-selected;
+    // editable-selected paints a plain surface behind whatever it wraps,
+    // which on a chip would wash out the tint that makes it a chip. Keep the
+    // ring and the lift, put the chip's own background back.
+    background-color: $tint-bg;
+  }
+}
+
+// A standard two-column grip, drawn rather than iconised.
+.drag-handle {
+  display: inline-block;
+  width: 0.45em;
+  height: 0.85em;
+  flex-shrink: 0;
+  cursor: grab;
+  opacity: 0.55;
+  background-image: radial-gradient(currentColor 40%, transparent 42%);
+  background-size: 0.22em 0.28em;
+  background-repeat: round;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.chip-text {
+  overflow-wrap: anywhere;
+}
+
+// ----------------------------------------------------------------------------
+//  The popover: both halves of the link at once.
+// ----------------------------------------------------------------------------
+
+.link-popover {
+  position: absolute;
+  top: calc(100% + 0.5em);
+  left: 0;
+  z-index: 3;
+  min-width: 20em;
+  max-width: min(26em, 80vw);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6em;
+  padding: 0.8em;
+  box-sizing: border-box;
+  text-align: left;
+  background-color: $theme-bg-color;
+  border: 1px solid $border-color-light;
+  border-radius: $radius-card;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  animation: linkPopoverIn 0.15s ease-out both;
+}
+
+@keyframes linkPopoverIn {
+  from {
+    opacity: 0;
+    transform: translateY(-0.3em);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.link-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+
+  input {
+    max-width: none;
+  }
+}
+
+.link-field-label {
+  font-size: 0.8em;
+  font-weight: 600;
+  color: $text-muted;
+}
+
+.link-popover-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+
+  .spacer {
+    flex-grow: 1;
+  }
+}
+
+// The row keeps its shape on a phone; only the popover has to fit.
+@media (max-width: 600px) {
+  .link-popover {
+    min-width: 0;
+    width: min(20em, 80vw);
+  }
+}

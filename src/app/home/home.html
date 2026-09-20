@@ -20,8 +20,9 @@
     @let p = profile();
     <header class="profile-header">
       @if (p.photoUrl || editing()) {
-        <div class="profile-photo-slot">
+        <div class="profile-photo-slot" [class.cropping]="photoEditor.isOpen()">
           <app-editable-image
+            #photoEditor
             fieldId="profile.photo"
             label="Photo"
             [imageUrl]="p.photoUrl"
@@ -66,47 +67,42 @@
         @if (p.links.length > 0 || editing()) {
           <div class="profile-links" [class.editing]="editing()">
             @for (link of p.links; track $index) {
+              <!-- A slot between every pair of chips: it adds a link there,
+                   and it is also where a dragged chip lands. -->
               @if (editing()) {
-                <app-editable-list-item
-                  class="link-item"
-                  [itemId]="'link.' + $index"
-                  label="link"
-                  [index]="$index"
-                  [count]="p.links.length"
-                  (move)="moveLink($index, $event)"
-                  (remove)="removeLink($index)"
-                  (insert)="insertLink($event)"
+                <button
+                  type="button"
+                  class="link-slot"
+                  [class.drop-target]="dropIndex() === $index"
+                  [title]="'Add a link here'"
+                  (click)="insertLink($index)"
+                  (dragover)="onSlotDragOver($index, $any($event))"
+                  (dragleave)="onSlotDragLeave($index)"
+                  (drop)="onSlotDrop($index, $any($event))"
                 >
-                  <app-editable-field
-                    [fieldId]="'link.' + $index + '.label'"
-                    label="Link label"
-                    [value]="link.label"
-                    [commit]="linkCommit($index, 'label')"
-                  >
-                    <span class="tag-chip chip-link">{{ link.label || link.url }}</span>
-                  </app-editable-field>
-                  <app-editable-field
-                    [fieldId]="'link.' + $index + '.url'"
-                    label="Link URL"
-                    emptyText="Add the URL"
-                    placeholder="https://…"
-                    [value]="link.url"
-                    [commit]="linkCommit($index, 'url')"
-                  >
-                    <span class="link-url">{{ link.url }}</span>
-                  </app-editable-field>
-                </app-editable-list-item>
-              } @else {
-                <a class="tag-chip chip-link" [href]="link.url" target="_blank" rel="noopener">
-                  {{ link.label || link.url }}
-                  <app-icon name="launch" width="0.9em" height="0.9em"></app-icon>
-                </a>
+                  <span class="link-slot-mark">+</span>
+                </button>
               }
+              <app-editable-link-chip
+                [link]="link"
+                [index]="$index"
+                (save)="saveLink($index, $event)"
+                (remove)="removeLink($index)"
+                (moveTo)="reorderLink($index, $event)"
+              ></app-editable-link-chip>
             }
-            @if (editing() && p.links.length === 0) {
-              <button type="button" class="outlined-button" (click)="insertLink(0)">
-                <app-icon name="add" width="1em" height="1em"></app-icon>
-                Add a link
+            @if (editing()) {
+              <button
+                type="button"
+                class="link-slot"
+                [class.drop-target]="dropIndex() === p.links.length"
+                title="Add a link here"
+                (click)="insertLink(p.links.length)"
+                (dragover)="onSlotDragOver(p.links.length, $any($event))"
+                (dragleave)="onSlotDragLeave(p.links.length)"
+                (drop)="onSlotDrop(p.links.length, $any($event))"
+              >
+                <span class="link-slot-mark">+</span>
               </button>
             }
           </div>
